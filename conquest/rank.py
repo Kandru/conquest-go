@@ -259,6 +259,11 @@ class rank:
 						if int(self.weapons[item]['rank']) <= int(pdata['rank'][str(pdata['class'])]) and int(self.weapons[item]['type']) == 3 and pteam == self.weapons[item]['team'] and int(pdata['class']) == self.weapons[item]['class']:
 							for x in range(0, self.weapons[item]['amount']):
 								player.give_named_item(self.weapons[item]['slug'], 0, None, True)
+			# give kevlar (and helmet on lvl 20 or above)
+			if int(pdata['rank'][str(pdata['class'])]) < 20:
+				player.give_named_item('item_kevlar', 0, None, True)
+			else:
+				player.give_named_item('item_assaultsuit', 0, None, True)
 			# ready for spawn let other plugins know
 			self.callbacks.execute('player_is_spawned', player.userid)
 		except:
