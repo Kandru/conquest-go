@@ -33,3 +33,4 @@ it's useful to use classic casual as gamemode because otherwise you couldn't joi
 - Skin: CSGO Rayman (http://gamebanana.com/skins/143904) Made by Voikanaa (thanks!)
 - Skin: CSGO Shadow Company (http://gamebanana.com/skins/144154) Made by Voikanaa, too (thanks again!)
 - Skin: CSGO TF2 Heavy (http://gamebanana.com/skins/142003) Made by Kuristaja (thanks!)
+- Skin: CSGO Nanosuit (http://gamebanana.com/skins/136977) Made by Kuristaja (thanks again!)
