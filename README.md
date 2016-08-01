@@ -4,6 +4,18 @@ a battlefield series style conquest mod for counter-strike:global offensive
 ## introduction
 conquest:go is an mod written in python3 (sourcepython.com) for playing a conquest like counter-strike as seen in the battlefield series. the goal is to have some great big maps with 6 or more conquest points where two teams of 16 players can conquer them.
 
+## features
+Here are some of the main features of the gamemode:
+
+- completely configurable conquest flags
+- skins for different kinds of players (e.G. V.I.P. or admin, ...)
+- spawnprotection
+- supports every map
+- autodownload for skins or other stuff (like sounds, ...)
+- create very own classes
+- create own weapon list available for each class
+- change, add or delete ranks (currently 60 ranks)
+
 ## installation
 just copy the "conquest" folder into the plugin directory of sourcepython and change the "mysql.py" to your actual mysql database. import the sql schemata "database.sql" and load my default test map "cs_office". just add one or more bots to your game (to actually start the game) and have fun testing.
 
