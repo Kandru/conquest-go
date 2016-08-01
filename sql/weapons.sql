@@ -6,7 +6,7 @@ SELECT * FROM csgo_1.weapons;
 INSERT INTO csgo_1.weapons (name, slug, rank, class, team, type) VALUES
 /* CT Assault primary */
 ('Famas','weapon_famas',1,4,'CT',1),
-('M4A1-S','weapon_m4a1',6,4,'CT',1),
+('M4A1-S','weapon_m4a1_silencer',6,4,'CT',1),
 ('M4A4','weapon_m4a1',16,4,'CT',1), /* fix me */
 ('AUG','weapon_aug',31,4,'CT',1),
 /* CT Assault secondary */
