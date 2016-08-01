@@ -35,8 +35,8 @@ INSERT INTO csgo_1.weapons (name, slug, rank, class, team, type) VALUES
 ('Deagle','weapon_deagle',56,2,'CT',2),
 ('R8 Revolver','weapon_revolver',56,2,'CT',2),
 /* CT Engineer grenades */
-('Incendiary Grenade 1x','weapon_incgrenade',1,4,'CT',3),
-('Smoke Grenade 1x','weapon_smokegrenade',1,4,'CT',3),
+('Incendiary Grenade 1x','weapon_incgrenade',1,2,'CT',3),
+('Smoke Grenade 1x','weapon_smokegrenade',1,2,'CT',3),
 /* CT Support primary */
 ('MP9','weapon_mp9',1,1,'CT',1),
 ('Nova','weapon_nova',6,1,'CT',1),
