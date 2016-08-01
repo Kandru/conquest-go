@@ -12,3 +12,4 @@ Things that are needed to get this mod completely done
 - include a sound class for announcing things like a new level, captured flag, ...
 - do not use a menu for displaying the overall flag status and rank information because it will block numeric keys for chosing weapons quickly... (is there any other way?)
 - do not respawn if one team got no flag any more. end round if nobody of enemy team is alive
+- add grenades to player on spawn
