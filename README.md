@@ -17,7 +17,14 @@ Here are some of the main features of the gamemode:
 - change, add or delete ranks (currently 60 ranks)
 
 ## installation
-just copy the "conquest" folder into the plugin directory of sourcepython and change the "mysql.py" to your actual mysql database. import the sql schemata "database.sql" and load my default test map "cs_office". just add one or more bots to your game (to actually start the game) and have fun testing.
+- install latest release of sourcepython (http://forums.sourcepython.com/)
+- copy the "materials" and "models" folder to your csgo server directory into the existing folders (overwrite if neccessary)
+- upload same files on your gameservers fastdownload (if any) and maybe it's a good idea to compress them to save bandwidth and disk space
+- copy the "conquest" folder into the plugin directory of sourcepython and change connection details in "mysql.py"
+- import the schema "database.sql" to your database server
+- create a server.cfg file in the "cfg" directory of your csgo server and add the config entries below to it
+- start the server (see command below)
+- add bots for testing or just start playing with your friends
 
 ### server config file
 you should set some csgo server variables at least and make sure they don't get overwritten since we definately need them ;)
