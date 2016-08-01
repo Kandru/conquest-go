@@ -30,3 +30,4 @@ it's useful to use classic casual as gamemode because otherwise you couldn't joi
 - http://battlefront-cantina.de/ - Jack who helped me testing and provided me a list of all weapons for every class and many more!
 - n0rt3-X - helped me testing :)
 - Taskiii - helped me testing and provided the idea, too :)
+- Skin: CSGO Rayman (http://gamebanana.com/skins/143904) Made by Voikanaa (thanks!)

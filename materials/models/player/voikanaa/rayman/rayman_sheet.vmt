@@ -1,0 +1,16 @@
+vertexlitgeneric
+{
+	$basetexture "models/player/voikanaa/rayman/rayman_sheet"
+	$bumpmap "models/player/voikanaa/rayman/rayman_sheet_bump"
+	$alphatest 1
+
+	"$phong" "1"
+	"$phongBoost" "1"
+	"$phongExponent" "10"  
+	"$phongFresnelRanges" "[0 0.5 1]"
+	"$PhongAlbedoTint" "1"
+
+	"$rimlight" "1"
+	"$rimlightexponent" "5"
+	"$rimlightboost" ".1"
+}
