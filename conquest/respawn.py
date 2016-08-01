@@ -1,8 +1,4 @@
 # CONQUEST:GO
-# https://github.com/Kandru/conquest-go
-# author: Karl-Martin Minkner
-# website: https://gameshare.community
-
 from messages import SayText2
 from messages import HintText
 from config.cvar import ConVar
@@ -19,8 +15,6 @@ class respawn:
 		self.callbacks = callbacks
 		self.respawn_time = ConVar("cq_respawn_time", '3', 'respawn interval')
 		self.spawnprotection = ConVar("cq_spawnprotection", '2', 'spawn protection time (sec.)')
-		self.msg_prepare = SayText2('prepare for respawn in {} seconds'.format(self.respawn_time.get_int()))
-		self.msg_respawn = SayText2('welcome again, soldier!')
 		self.msg_spawnprotection = HintText('Spawn protection disabled')
 		# callbacks
 		self.callbacks.register('player_is_spawned', 'respawn_spawnprotection_end', self.delay_spawnprotection_end)
@@ -46,7 +40,6 @@ class respawn:
 				return
 			if player.team not in (2, 3):
 				return
-			self.msg_respawn.send(player.index)
 			player.player_state = 0
 			player.life_state = LifeState.ALIVE
 			player.respawn()
@@ -102,7 +95,6 @@ class respawn:
 	def player_death(self, userid):
 		try:
 			player = Player.from_userid(userid)
-			self.msg_prepare.send(player.index)
 			Delay(self.respawn_time.get_int(), self.respawnplayer, userid)
 		except:
 			msg('ERROR', 'could not respawn player after death')
