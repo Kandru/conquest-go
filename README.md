@@ -20,7 +20,11 @@ mp_free_armor "0"
 sv_tags "conquest:go"
 ```
 
-
+## start gameserver
+it's useful to use classic casual as gamemode because otherwise you couldn't join a running game. start the server with the following command:
+```
+./srcds_run -game csgo -console -usercon +game_type 0 +game_mode 0 +mapgroup mg_bomb +map de_cbble
+```
 ## credits
 - http://forums.sourcepython.com/ - all users and project leaders that helped me :)
 - http://battlefront-cantina.de/ - Jack who helped me testing and provided me a list of all weapons for every class and many more!
