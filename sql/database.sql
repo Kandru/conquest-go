@@ -157,6 +157,7 @@ CREATE TABLE `skins` (
 
 LOCK TABLES `skins` WRITE;
 /*!40000 ALTER TABLE `skins` DISABLE KEYS */;
+INSERT INTO `skins` VALUES (1,'Rayman','models/player/custom_player/voikanaa/rayman.mdl','models/player/custom_player/voikanaa/rayman.mdl\nmodels/player/custom_player/voikanaa/rayman.phy\nmodels/player/custom_player/voikanaa/rayman.vvd\nmodels/player/custom_player/voikanaa/rayman.dx90.vtx\nmaterials/models/player/voikanaa/rayman/rayman_sheet.vtf\nmaterials/models/player/voikanaa/rayman/rayman_sheet_bump.vtf\nmaterials/models/player/voikanaa/rayman/rayman_sheet.vmt',99);
 /*!40000 ALTER TABLE `skins` ENABLE KEYS */;
 UNLOCK TABLES;
 
