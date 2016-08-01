@@ -15,6 +15,7 @@ from conquest.flags import flags
 from conquest.respawn import respawn
 from conquest.rank import rank
 from conquest.callbacks import callbacks
+from conquest.downloads import downloads
 
 class_mysql = None
 class_flags = None
@@ -28,8 +29,9 @@ player2 = None
 def load():
 	global class_mysql, class_flags, class_respawn, class_rank
 	class_mysql = mysql()
+	class_downloads = downloads(class_mysql)
 	class_callbacks = callbacks()
-	class_rank = rank(class_mysql, class_callbacks)
+	class_rank = rank(class_mysql, class_callbacks, class_downloads)
 	class_flags = flags(class_mysql, class_rank, class_callbacks)
 	class_respawn = respawn(class_callbacks)
 
