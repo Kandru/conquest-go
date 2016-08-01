@@ -1,4 +1,8 @@
 # CONQUEST:GO
+# https://github.com/Kandru/conquest-go
+# author: Karl-Martin Minkner
+# website: https://gameshare.community
+
 import json
 from threading import Lock
 
@@ -6,21 +10,29 @@ from players.entity import Player
 from entities.entity import Entity
 from menus import PagedOption
 from messages import SayText2
+from engines.precache import Model
+from colors import Color
 
 from conquest.debug import msg
 from conquest.extendedpagedmenu import ExtendedPagedMenu
 
 class rank:
-	def __init__(self, db, callbacks):
+	def __init__(self, db, callbacks, downloads):
 		self.db = db
 		self.callbacks = callbacks
+		self.downloads = downloads
+		self.color_ct = Color(0, 200, 255)
+		self.color_n = Color(255, 255, 255)
+		self.color_t = Color(255, 0, 0)
 		self.ranks = {}
 		self.players = {}
 		self.classes = {}
 		self.weapons = {}
+		self.skins = {}
 		self.get_ranks()
 		self.get_classes()
 		self.get_weapons()
+		self.get_skins()
 		self.player_data_lock = Lock()
 
 	def get_ranks(self):
@@ -40,6 +52,15 @@ class rank:
 		rows = self.db.query(sql)
 		for row in rows:
 			self.weapons[row['id']] = row
+			
+	def get_skins(self):
+		sql = "SELECT * FROM skins ORDER BY id ASC"
+		rows = self.db.query(sql)
+		for row in rows:
+			for item in row['downloadlist'].splitlines():
+				self.downloads.add(item.strip())
+			row['model'] = Model(row['modelpath'])
+			self.skins[row['id']] = row
 
 	def get_player_cached_data(self, userid):
 		try:
@@ -89,7 +110,9 @@ class rank:
 			player = Player.from_userid(userid)
 			tmp_keys = ''
 			tmp_values = []
+			lock = False
 			self.player_data_lock.acquire()
+			lock = True
 			for item in data:
 				tmp_keys = tmp_keys + ', ' + item + ' = %s'
 				tmp_values.append(data[item])
@@ -97,10 +120,13 @@ class rank:
 					data[item] = json.loads(data[item])
 				self.players[player.steamid][item] = data[item]
 			self.player_data_lock.release()
+			lock = False
 			tmp_values.append(player.steamid)
 			sql = "UPDATE `players` SET " + tmp_keys[1:] + " WHERE steamid = %s"
 			self.db.query(sql, tmp_values)
 		except:
+			if lock:
+				self.player_data_lock.release()
 			msg('ERROR', 'could not update player data')
 			
 	def player_connect_full(self, userid):
@@ -138,10 +164,18 @@ class rank:
 							'change_class': 0
 						})
 						self.menu_select_class(userid)
+					elif int(pdata['change_skin']) == 1:
+						self.update_player_data(player.userid, {
+							'change_skin': 0
+						})
+						self.menu_select_skin(userid)
 					else:
 						self.player_give_weapon(userid)
 			else:
 				self.player_give_weapon(userid)
+			# set player skin
+			if int(pdata['skin']) != 0:
+				self.player_set_model(userid, pdata['skin'])
 		except:
 			msg('ERROR', 'could not grep player rank data')
 
@@ -185,9 +219,23 @@ class rank:
 				self.update_player_data(userid, {
 					'change_class': 1
 				})
-				SayText2('You can change your class on next respawn!').send(player.index)
+			# change skin
+			change_skin = ['!skin','!selectskin','!changeskin','!s']
+			if text in change_skin:
+				self.update_player_data(userid, {
+					'change_skin': 1
+				})
+				SayText2('You can change your skin on next respawn!').send(player.index)
 		except:
 			msg('ERROR', 'could not work with player say event')
+
+	def player_set_model(self, userid, modelid):
+		try:
+			player = Player.from_userid(userid)
+			if int(modelid) in self.skins:
+				player.model = self.skins[int(modelid)]['model']
+		except:
+			msg('ERROR', 'could not set player model')
 			
 	def player_check_rank(self, userid):
 		try:
@@ -293,7 +341,42 @@ class rank:
 			self.menu_select_class(player.userid)
 		except:
 			msg('ERROR', 'could not send class close callback to player')
+			
+	def menu_select_skin(self, userid):
+		player = Player.from_userid(userid)
+		pdata = self.get_player_data(userid)
+		menu = ExtendedPagedMenu(title='Select Skin', select_callback=self.menu_select_skin_callback, on_close_menu=self.menu_skin_close_callback)
+		tmp_count = 0
+		for item in self.skins:
+			# only if the usergroup is high enough
+			if int(self.skins[item]['group']) <= int(pdata['group']):
+				tmp_count += 1
+				menu.append(PagedOption('{}'.format(self.skins[item]['name']), str(item), selectable=True))
+		if tmp_count == 0:
+			menu.append(PagedOption('no custom skins', str(0), selectable=False))
+		else:
+			menu.append(PagedOption('default skin', str(0), selectable=True))
+		menu.send(player.index)
 
+	def menu_select_skin_callback(self, menu, pindex, option):
+		try:
+			player = Player(pindex)
+			self.player_set_model(player.userid, option.value)
+			self.update_player_data(player.userid, {
+				'change_skin': 0,
+				'skin': option.value
+			})
+			self.player_give_weapon(player.userid)
+		except:
+			msg('ERROR', 'could not send select skin callback to player')
+	
+	def menu_skin_close_callback(self, menu, pindex):
+		try:
+			player = Player(pindex)
+			self.player_give_weapon(player.userid)
+		except:
+			msg('ERROR', 'could not send skin callback menu to player')	
+	
 	def menu_select_pweapon(self, userid):
 		try:
 			player = Player.from_userid(userid)

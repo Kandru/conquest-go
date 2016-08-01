@@ -86,9 +86,12 @@ CREATE TABLE `players` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `steamid` varchar(255) COLLATE utf8_bin NOT NULL,
   `username` varchar(255) COLLATE utf8_bin NOT NULL,
+  `group` int(11) NOT NULL DEFAULT '0',
   `rank` text COLLATE utf8_bin NOT NULL,
   `cash` int(11) NOT NULL DEFAULT '0',
   `class` int(11) NOT NULL DEFAULT '0',
+  `skin` int(11) NOT NULL DEFAULT '0',
+  `change_skin` int(1) NOT NULL DEFAULT '0',
   `change_class` int(1) NOT NULL DEFAULT '0',
   `change_loadout1` int(1) NOT NULL DEFAULT '0',
   `loadout1` text COLLATE utf8_bin NOT NULL,
@@ -132,6 +135,32 @@ INSERT INTO `ranks` VALUES (1,'1',1000),(2,'2',1000),(3,'3',1000),(4,'4',1000),(
 UNLOCK TABLES;
 
 --
+-- Table structure for table `skins`
+--
+
+DROP TABLE IF EXISTS `skins`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `skins` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) COLLATE utf8_bin DEFAULT NULL,
+  `modelpath` varchar(255) COLLATE utf8_bin DEFAULT NULL,
+  `downloadlist` text COLLATE utf8_bin,
+  `group` int(11) DEFAULT '99',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `skins`
+--
+
+LOCK TABLES `skins` WRITE;
+/*!40000 ALTER TABLE `skins` DISABLE KEYS */;
+/*!40000 ALTER TABLE `skins` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `weapons`
 --
 
@@ -157,7 +186,7 @@ CREATE TABLE `weapons` (
 
 LOCK TABLES `weapons` WRITE;
 /*!40000 ALTER TABLE `weapons` DISABLE KEYS */;
-INSERT INTO `weapons` VALUES (1,'Famas','weapon_famas',1,4,'CT',1,1),(2,'M4A1-S','weapon_m4a1',6,4,'CT',1,1),(3,'M4A4','weapon_m4a1',16,4,'CT',1,1),(4,'AUG','weapon_aug',31,4,'CT',1,1),(5,'USP-S','weapon_usp_silencer',1,4,'CT',2,1),(6,'P2000','weapon_hkp2000',6,4,'CT',2,1),(7,'P250','weapon_p250',11,4,'CT',2,1),(8,'Five-Seven','weapon_fiveseven',26,4,'CT',2,1),(9,'CZ75 Auto','weapon_cz75a',36,4,'CT',2,1),(10,'Deagle','weapon_deagle',56,4,'CT',2,1),(11,'R8 Revolver','weapon_revolver',56,4,'CT',2,1),(12,'HE Grenade 1x','weapon_hegrenade',1,4,'CT',3,1),(13,'Flashbang 1x','weapon_flashbang',1,4,'CT',3,1),(14,'MP9','weapon_mp9',1,2,'CT',1,1),(15,'MP7','weapon_mp7',6,2,'CT',1,1),(16,'PP-Bizon','weapon_bizon',16,2,'CT',1,1),(17,'UMP-45','weapon_ump45',31,2,'CT',1,1),(18,'P90','weapon_p90',51,2,'CT',1,1),(19,'USP-S','weapon_usp_silencer',1,2,'CT',2,1),(20,'P2000','weapon_hkp2000',6,2,'CT',2,1),(21,'P250','weapon_p250',11,2,'CT',2,1),(22,'Five-Seven','weapon_fiveseven',26,2,'CT',2,1),(23,'CZ75 Auto','weapon_cz75a',36,2,'CT',2,1),(24,'Deagle','weapon_deagle',56,2,'CT',2,1),(25,'R8 Revolver','weapon_revolver',56,2,'CT',2,1),(26,'Incendiary Grenade 1x','weapon_incgrenade',1,4,'CT',3,1),(27,'Smoke Grenade 1x','weapon_smokegrenade',1,4,'CT',3,1),(28,'MP9','weapon_mp9',1,1,'CT',1,1),(29,'Nova','weapon_nova',6,1,'CT',1,1),(30,'XM1014','weapon_xm1014',11,1,'CT',1,1),(31,'Mag-7','weapon_mag7',26,1,'CT',1,1),(32,'M249','weapon_m249',46,1,'CT',1,1),(33,'Negev','weapon_negev',56,1,'CT',1,1),(34,'USP-S','weapon_usp_silencer',1,1,'CT',2,1),(35,'P2000','weapon_hkp2000',6,1,'CT',2,1),(36,'P250','weapon_p250',11,1,'CT',2,1),(37,'Five-Seven','weapon_fiveseven',26,1,'CT',2,1),(38,'CZ75 Auto','weapon_cz75a',36,1,'CT',2,1),(39,'Deagle','weapon_deagle',56,1,'CT',2,1),(40,'R8 Revolver','weapon_revolver',56,1,'CT',2,1),(41,'Flashbang 2x','weapon_flashbang',1,1,'CT',3,1),(42,'SSG08','weapon_ssg08',1,3,'CT',1,1),(43,'SCAR-20','weapon_scar20',31,3,'CT',1,1),(44,'AWP','weapon_awp',46,3,'CT',1,1),(45,'USP-S','weapon_usp_silencer',1,3,'CT',2,1),(46,'P2000','weapon_hkp2000',6,3,'CT',2,1),(47,'P250','weapon_p250',11,3,'CT',2,1),(48,'Five-Seven','weapon_fiveseven',26,3,'CT',2,1),(49,'CZ75 Auto','weapon_cz75a',36,3,'CT',2,1),(50,'Deagle','weapon_deagle',56,3,'CT',2,1),(51,'R8 Revolver','weapon_revolver',56,3,'CT',2,1),(52,'Decoy Grenade 1x','weapon_decoy',1,3,'CT',3,1),(53,'Smoke Grenade 1x','weapon_smokegrenade',1,3,'CT',3,1),(54,'Galil AR','weapon_galilar',1,4,'T',1,1),(55,'AK-47','weapon_ak47',31,4,'T',1,1),(56,'SG 556','weapon_sg556',51,4,'T',1,1),(57,'Glock-18','weapon_glock',1,4,'T',2,1),(58,'Dual Barettas','weapon_elite',6,4,'T',2,1),(59,'P250','weapon_p250',11,4,'T',2,1),(60,'TEC-9','weapon_tec9',26,4,'T',2,1),(61,'CZ75 Auto','weapon_cz75a',36,4,'T',2,1),(62,'Deagle','weapon_deagle',56,4,'T',2,1),(63,'R8 Revolver','weapon_revolver',56,4,'T',2,1),(64,'HE Grenade 1x','weapon_hegrenade',1,4,'T',3,1),(65,'Flashbang 1x','weapon_flashbang',1,4,'T',3,1),(66,'Mac-10','weapon_mac10',1,2,'T',1,1),(67,'MP7','weapon_mp7',6,2,'T',1,1),(68,'PP-Bizon','weapon_bizon',16,2,'T',1,1),(69,'UMP-45','weapon_ump45',31,2,'T',1,1),(70,'P90','weapon_p90',51,2,'T',1,1),(71,'Glock-18','weapon_glock',1,2,'T',2,1),(72,'Dual Barettas','weapon_elite',6,2,'T',2,1),(73,'P250','weapon_p250',11,2,'T',2,1),(74,'TEC-9','weapon_tec9',26,2,'T',2,1),(75,'CZ75 Auto','weapon_cz75a',36,2,'T',2,1),(76,'Deagle','weapon_deagle',56,2,'T',2,1),(77,'R8 Revolver','weapon_revolver',56,2,'T',2,1),(78,'Molotov Cocktail 1x','weapon_molotov',1,2,'T',3,1),(79,'Smoke Grenade 1x','weapon_smokegrenade',1,2,'T',3,1),(80,'Mac-10','weapon_mac10',1,1,'T',1,1),(81,'Nova','weapon_nova',6,1,'T',1,1),(82,'XM1014','weapon_xm1014',11,1,'T',1,1),(83,'Sawed-Off','weapon_sawedoff',26,1,'T',1,1),(84,'M249','weapon_m249',46,1,'T',1,1),(85,'Negev','weapon_negev',56,1,'T',1,1),(86,'Glock-18','weapon_glock',1,1,'T',2,1),(87,'Dual Barettas','weapon_elite',6,1,'T',2,1),(88,'P250','weapon_p250',11,1,'T',2,1),(89,'TEC-9','weapon_tec9',26,1,'T',2,1),(90,'CZ75 Auto','weapon_cz75a',36,1,'T',2,1),(91,'Deagle','weapon_deagle',56,1,'T',2,1),(92,'R8 Revolver','weapon_revolver',56,1,'T',2,1),(93,'Flashbang 2x','weapon_flashbang',1,1,'T',3,1),(94,'SSG08','weapon_ssg08',1,3,'T',1,1),(95,'G3SG1','weapon_g3sg1',31,3,'T',1,1),(96,'AWP','weapon_awp',46,3,'T',1,1),(97,'Glock-18','weapon_glock',1,3,'T',2,1),(98,'Dual Barettas','weapon_elite',6,3,'T',2,1),(99,'P250','weapon_p250',11,3,'T',2,1),(100,'TEC-9','weapon_tec9',26,3,'T',2,1),(101,'CZ75 Auto','weapon_cz75a',36,3,'T',2,1),(102,'Deagle','weapon_deagle',56,3,'T',2,1),(103,'R8 Revolver','weapon_revolver',56,3,'T',2,1),(104,'Decoy Grenade 1x','weapon_decoy',1,3,'T',3,1),(105,'Smoke Grenade 1x','weapon_smokegrenade',1,3,'T',3,1);
+INSERT INTO `weapons` VALUES (1,'Famas','weapon_famas',1,4,'CT',1,1),(2,'M4A1-S','weapon_m4a1_silencer',6,4,'CT',1,1),(3,'M4A4','weapon_m4a1',16,4,'CT',1,1),(4,'AUG','weapon_aug',31,4,'CT',1,1),(5,'USP-S','weapon_usp_silencer',1,4,'CT',2,1),(6,'P2000','weapon_hkp2000',6,4,'CT',2,1),(7,'P250','weapon_p250',11,4,'CT',2,1),(8,'Five-Seven','weapon_fiveseven',26,4,'CT',2,1),(9,'CZ75 Auto','weapon_cz75a',36,4,'CT',2,1),(10,'Deagle','weapon_deagle',56,4,'CT',2,1),(11,'R8 Revolver','weapon_revolver',56,4,'CT',2,1),(12,'HE Grenade 1x','weapon_hegrenade',1,4,'CT',3,1),(13,'Flashbang 1x','weapon_flashbang',1,4,'CT',3,1),(14,'MP9','weapon_mp9',1,2,'CT',1,1),(15,'MP7','weapon_mp7',6,2,'CT',1,1),(16,'PP-Bizon','weapon_bizon',16,2,'CT',1,1),(17,'UMP-45','weapon_ump45',31,2,'CT',1,1),(18,'P90','weapon_p90',51,2,'CT',1,1),(19,'USP-S','weapon_usp_silencer',1,2,'CT',2,1),(20,'P2000','weapon_hkp2000',6,2,'CT',2,1),(21,'P250','weapon_p250',11,2,'CT',2,1),(22,'Five-Seven','weapon_fiveseven',26,2,'CT',2,1),(23,'CZ75 Auto','weapon_cz75a',36,2,'CT',2,1),(24,'Deagle','weapon_deagle',56,2,'CT',2,1),(25,'R8 Revolver','weapon_revolver',56,2,'CT',2,1),(26,'Incendiary Grenade 1x','weapon_incgrenade',1,2,'CT',3,1),(27,'Smoke Grenade 1x','weapon_smokegrenade',1,2,'CT',3,1),(28,'MP9','weapon_mp9',1,1,'CT',1,1),(29,'Nova','weapon_nova',6,1,'CT',1,1),(30,'XM1014','weapon_xm1014',11,1,'CT',1,1),(31,'Mag-7','weapon_mag7',26,1,'CT',1,1),(32,'M249','weapon_m249',46,1,'CT',1,1),(33,'Negev','weapon_negev',56,1,'CT',1,1),(34,'USP-S','weapon_usp_silencer',1,1,'CT',2,1),(35,'P2000','weapon_hkp2000',6,1,'CT',2,1),(36,'P250','weapon_p250',11,1,'CT',2,1),(37,'Five-Seven','weapon_fiveseven',26,1,'CT',2,1),(38,'CZ75 Auto','weapon_cz75a',36,1,'CT',2,1),(39,'Deagle','weapon_deagle',56,1,'CT',2,1),(40,'R8 Revolver','weapon_revolver',56,1,'CT',2,1),(41,'Flashbang 2x','weapon_flashbang',1,1,'CT',3,2),(42,'SSG08','weapon_ssg08',1,3,'CT',1,1),(43,'SCAR-20','weapon_scar20',31,3,'CT',1,1),(44,'AWP','weapon_awp',46,3,'CT',1,1),(45,'USP-S','weapon_usp_silencer',1,3,'CT',2,1),(46,'P2000','weapon_hkp2000',6,3,'CT',2,1),(47,'P250','weapon_p250',11,3,'CT',2,1),(48,'Five-Seven','weapon_fiveseven',26,3,'CT',2,1),(49,'CZ75 Auto','weapon_cz75a',36,3,'CT',2,1),(50,'Deagle','weapon_deagle',56,3,'CT',2,1),(51,'R8 Revolver','weapon_revolver',56,3,'CT',2,1),(52,'Decoy Grenade 1x','weapon_decoy',1,3,'CT',3,1),(53,'Smoke Grenade 1x','weapon_smokegrenade',1,3,'CT',3,1),(54,'Galil AR','weapon_galilar',1,4,'T',1,1),(55,'AK-47','weapon_ak47',31,4,'T',1,1),(56,'SG 556','weapon_sg556',51,4,'T',1,1),(57,'Glock-18','weapon_glock',1,4,'T',2,1),(58,'Dual Barettas','weapon_elite',6,4,'T',2,1),(59,'P250','weapon_p250',11,4,'T',2,1),(60,'TEC-9','weapon_tec9',26,4,'T',2,1),(61,'CZ75 Auto','weapon_cz75a',36,4,'T',2,1),(62,'Deagle','weapon_deagle',56,4,'T',2,1),(63,'R8 Revolver','weapon_revolver',56,4,'T',2,1),(64,'HE Grenade 1x','weapon_hegrenade',1,4,'T',3,1),(65,'Flashbang 1x','weapon_flashbang',1,4,'T',3,1),(66,'Mac-10','weapon_mac10',1,2,'T',1,1),(67,'MP7','weapon_mp7',6,2,'T',1,1),(68,'PP-Bizon','weapon_bizon',16,2,'T',1,1),(69,'UMP-45','weapon_ump45',31,2,'T',1,1),(70,'P90','weapon_p90',51,2,'T',1,1),(71,'Glock-18','weapon_glock',1,2,'T',2,1),(72,'Dual Barettas','weapon_elite',6,2,'T',2,1),(73,'P250','weapon_p250',11,2,'T',2,1),(74,'TEC-9','weapon_tec9',26,2,'T',2,1),(75,'CZ75 Auto','weapon_cz75a',36,2,'T',2,1),(76,'Deagle','weapon_deagle',56,2,'T',2,1),(77,'R8 Revolver','weapon_revolver',56,2,'T',2,1),(78,'Molotov Cocktail 1x','weapon_molotov',1,2,'T',3,1),(79,'Smoke Grenade 1x','weapon_smokegrenade',1,2,'T',3,1),(80,'Mac-10','weapon_mac10',1,1,'T',1,1),(81,'Nova','weapon_nova',6,1,'T',1,1),(82,'XM1014','weapon_xm1014',11,1,'T',1,1),(83,'Sawed-Off','weapon_sawedoff',26,1,'T',1,1),(84,'M249','weapon_m249',46,1,'T',1,1),(85,'Negev','weapon_negev',56,1,'T',1,1),(86,'Glock-18','weapon_glock',1,1,'T',2,1),(87,'Dual Barettas','weapon_elite',6,1,'T',2,1),(88,'P250','weapon_p250',11,1,'T',2,1),(89,'TEC-9','weapon_tec9',26,1,'T',2,1),(90,'CZ75 Auto','weapon_cz75a',36,1,'T',2,1),(91,'Deagle','weapon_deagle',56,1,'T',2,1),(92,'R8 Revolver','weapon_revolver',56,1,'T',2,1),(93,'Flashbang 2x','weapon_flashbang',1,1,'T',3,2),(94,'SSG08','weapon_ssg08',1,3,'T',1,1),(95,'G3SG1','weapon_g3sg1',31,3,'T',1,1),(96,'AWP','weapon_awp',46,3,'T',1,1),(97,'Glock-18','weapon_glock',1,3,'T',2,1),(98,'Dual Barettas','weapon_elite',6,3,'T',2,1),(99,'P250','weapon_p250',11,3,'T',2,1),(100,'TEC-9','weapon_tec9',26,3,'T',2,1),(101,'CZ75 Auto','weapon_cz75a',36,3,'T',2,1),(102,'Deagle','weapon_deagle',56,3,'T',2,1),(103,'R8 Revolver','weapon_revolver',56,3,'T',2,1),(104,'Decoy Grenade 1x','weapon_decoy',1,3,'T',3,1),(105,'Smoke Grenade 1x','weapon_smokegrenade',1,3,'T',3,1);
 /*!40000 ALTER TABLE `weapons` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -170,4 +199,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-08-01 13:15:11
+-- Dump completed on 2016-08-02  0:57:57
