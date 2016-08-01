@@ -1,8 +1,4 @@
 # CONQUEST:GO
-# https://github.com/Kandru/conquest-go
-# author: Karl-Martin Minkner
-# website: https://gameshare.community
-
 import json
 from threading import Lock
 
@@ -255,6 +251,10 @@ class rank:
 						player.give_named_item(loadout1[pteam][str(pdata['class'])]['primary'], 0, None, True)
 					if 'secondary' in loadout1[pteam][str(pdata['class'])]:
 						player.give_named_item(loadout1[pteam][str(pdata['class'])]['secondary'], 0, None, True)
+					for item in self.weapons:
+						if int(self.weapons[item]['rank']) <= int(pdata['rank'][str(pdata['class'])]) and int(self.weapons[item]['type']) == 3 and pteam == self.weapons[item]['team'] and int(pdata['class']) == self.weapons[item]['class']:
+							for x in range(0, self.weapons[item]['amount']):
+								player.give_named_item(self.weapons[item]['slug'], 0, None, True)
 			# ready for spawn let other plugins know
 			self.callbacks.execute('player_is_spawned', player.userid)
 		except:
