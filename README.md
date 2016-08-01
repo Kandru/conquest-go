@@ -31,3 +31,4 @@ it's useful to use classic casual as gamemode because otherwise you couldn't joi
 - n0rt3-X - helped me testing :)
 - Taskiii - helped me testing and provided the idea, too :)
 - Skin: CSGO Rayman (http://gamebanana.com/skins/143904) Made by Voikanaa (thanks!)
+- Skin: CSGO Shadow Company (http://gamebanana.com/skins/144154) Made by Voikanaa, too (thanks again!)

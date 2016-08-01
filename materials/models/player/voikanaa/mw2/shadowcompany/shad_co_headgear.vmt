@@ -1,0 +1,15 @@
+vertexlitgeneric
+{
+	$basetexture "models/player/voikanaa/mw2/shadowcompany/shad_co_headgear"
+	$bumpmap "models/player/voikanaa/mw2/shadowcompany/shad_co_headgear_n"
+
+	"$phong" "1"
+	"$phongBoost" "10"
+	"$phongExponent" "10"  
+	"$phongFresnelRanges" "[0 0.5 1]"
+	"$PhongAlbedoTint" "1"
+
+	"$rimlight" "1"
+	"$rimlightexponent" "5"
+	"$rimlightboost" ".1"
+}
