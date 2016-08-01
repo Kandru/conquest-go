@@ -16,6 +16,7 @@ mp_afterroundmoney "0"
 mp_timelimit "0"
 mp_buytime "0"
 mp_win_panel_display_time "7"
+mp_free_armor "0"
 sv_tags "conquest:go"
 ```
 
