@@ -57,8 +57,9 @@ class rank:
 		sql = "SELECT * FROM skins ORDER BY id ASC"
 		rows = self.db.query(sql)
 		for row in rows:
-			for item in row['downloadlist'].splitlines():
-				self.downloads.add(item.strip())
+			if row['downloadlist']:
+				for item in row['downloadlist'].splitlines():
+					self.downloads.add(item.strip())
 			row['model'] = Model(row['modelpath'])
 			self.skins[row['id']] = row
 
