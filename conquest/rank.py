@@ -211,6 +211,10 @@ class rank:
 						for item in self.weapons:
 							if int(self.weapons[item]['rank']) == int(new_rank) and pteam == self.weapons[item]['team'] and int(pdata['class']) == self.weapons[item]['class']:
 								SayText2('New Weapon: {}'.format(self.weapons[item]['name'])).send(player.index)
+								# ability to change weapon on next spawn because of a new weapon
+								self.update_player_data(userid, {
+									'change_loadout1': 1
+								})
 						self.player_check_rank(userid)
 						#TODO: notification for new rank (e.G. Sound?)
 		except:
