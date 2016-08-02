@@ -363,24 +363,24 @@ class rank:
 		menu.send(player.index)
 
 	def menu_select_skin_callback(self, menu, pindex, option):
-		#try:
-		player = Player(pindex)
-		self.player_set_model(player.userid, option.value)
-		if player.team == 3:
-			pteam = 'CT'
-		else:
-			pteam = 'T'
-		pdata = self.get_player_data(player.userid)
-		if not pdata['skin']:
-			pdata['skin'] = {pteam: option.value}
-		pdata['skin'][pteam] = option.value
-		self.update_player_data(player.userid, {
-			'change_skin': 0,
-			'skin': json.dumps(pdata['skin'])
-		})
-		self.player_give_weapon(player.userid)
-		#except:
-		#	msg('ERROR', 'could not send select skin callback to player')
+		try:
+			player = Player(pindex)
+			self.player_set_model(player.userid, option.value)
+			if player.team == 3:
+				pteam = 'CT'
+			else:
+				pteam = 'T'
+			pdata = self.get_player_data(player.userid)
+			if not pdata['skin']:
+				pdata['skin'] = {pteam: option.value}
+			pdata['skin'][pteam] = option.value
+			self.update_player_data(player.userid, {
+				'change_skin': 0,
+				'skin': json.dumps(pdata['skin'])
+			})
+			self.player_give_weapon(player.userid)
+		except:
+			msg('ERROR', 'could not send select skin callback to player')
 	
 	def menu_skin_close_callback(self, menu, pindex):
 		try:
