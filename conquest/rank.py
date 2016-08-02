@@ -83,7 +83,10 @@ class rank:
 			row = self.db.query(sql, (player.steamid,), fetch_all = False)
 			if row:
 				player.cash = row['cash']
-				row['rank'] = json.loads(row['rank'])
+				if row['rank']:
+					row['rank'] = json.loads(row['rank'])
+				if row['skin']:
+					row['skin'] = json.loads(row['skin'])
 			else:
 				# if user does not exist in our database
 				self.insert_player_data(userid)
@@ -175,8 +178,9 @@ class rank:
 			else:
 				self.player_give_weapon(userid)
 			# set player skin
-			if int(pdata['skin']) != 0:
-				self.player_set_model(userid, pdata['skin'])
+			if pteam in pdata['skin']:
+				if int(pdata['skin'][pteam]) != 0:
+					self.player_set_model(userid, pdata['skin'][pteam])
 		except:
 			msg('ERROR', 'could not grep player rank data')
 
@@ -345,31 +349,38 @@ class rank:
 			
 	def menu_select_skin(self, userid):
 		player = Player.from_userid(userid)
+		if player.team == 3:
+			pteam = 'CT'
+		else:
+			pteam = 'T'
 		pdata = self.get_player_data(userid)
 		menu = ExtendedPagedMenu(title='Select Skin', select_callback=self.menu_select_skin_callback, on_close_menu=self.menu_skin_close_callback)
-		tmp_count = 0
 		for item in self.skins:
 			# only if the usergroup is high enough
-			if int(self.skins[item]['group']) <= int(pdata['group']):
-				tmp_count += 1
+			if int(self.skins[item]['group']) <= int(pdata['group']) and (self.skins[item]['team'] == pteam or not self.skins[item]['team']):
 				menu.append(PagedOption('{}'.format(self.skins[item]['name']), str(item), selectable=True))
-		if tmp_count == 0:
-			menu.append(PagedOption('no custom skins', str(0), selectable=False))
-		else:
-			menu.append(PagedOption('default skin', str(0), selectable=True))
+		menu.append(PagedOption('default skin', str(0), selectable=True))
 		menu.send(player.index)
 
 	def menu_select_skin_callback(self, menu, pindex, option):
-		try:
-			player = Player(pindex)
-			self.player_set_model(player.userid, option.value)
-			self.update_player_data(player.userid, {
-				'change_skin': 0,
-				'skin': option.value
-			})
-			self.player_give_weapon(player.userid)
-		except:
-			msg('ERROR', 'could not send select skin callback to player')
+		#try:
+		player = Player(pindex)
+		self.player_set_model(player.userid, option.value)
+		if player.team == 3:
+			pteam = 'CT'
+		else:
+			pteam = 'T'
+		pdata = self.get_player_data(player.userid)
+		if not pdata['skin']:
+			pdata['skin'] = {pteam: option.value}
+		pdata['skin'][pteam] = option.value
+		self.update_player_data(player.userid, {
+			'change_skin': 0,
+			'skin': json.dumps(pdata['skin'])
+		})
+		self.player_give_weapon(player.userid)
+		#except:
+		#	msg('ERROR', 'could not send select skin callback to player')
 	
 	def menu_skin_close_callback(self, menu, pindex):
 		try:
