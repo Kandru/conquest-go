@@ -77,7 +77,9 @@ class flags:
 					if int(self.flags[item]['draw']) == 1:
 						menu.append(self.flags[item]['name'] + ': DRAW')
 					elif int(self.flags[item]['timestamp']) > 0 and time_left > 0:
-						menu.append(self.flags[item]['name'] + ': ' + self.flags[item]['tmp_status']+ ' in ' + str(time_left))
+						if self.flags[item]['tmp_status'] == 'none':
+							time_left += self.flags[item]['timer']
+						menu.append(self.flags[item]['name'] + ': ' + self.flags[item]['tmp_conquered_by'] + ' in ' + str(time_left))
 					else:
 						menu.append(self.flags[item]['name'] + ': ' + self.flags[item]['status'])
 		except:
@@ -111,7 +113,10 @@ class flags:
 					else:
 						color = self.color_n
 					tmp_flag = Entity.create('prop_physics_override')
-					tmp_flag.origin = Vector(row['X'], row['Y'], row['Z'] + self.flag_height)
+					if row['status'] != 'none':
+						tmp_flag.origin = Vector(row['X'], row['Y'], row['Z'] + self.flag_height)
+					else:
+						tmp_flag.origin = Vector(row['X'], row['Y'], row['Z'])
 					tmp_flag.model = self.model_flag
 					tmp_flag.spawn_flags = 265
 					tmp_flag.set_key_value_color('rendercolor', color)
@@ -135,6 +140,7 @@ class flags:
 						'timer': row['timer'],
 						'status': row['status'],
 						'tmp_status': row['status'],
+						'tmp_conquered_by': 'none',
 						'draw': 0,
 						'timestamp': '0',
 						't_index' : [],
@@ -163,7 +169,10 @@ class flags:
 				if flag is not None:
 					if flag['name'] not in self.flags:
 						tmp_flag = Entity.create('prop_physics_override')
-						tmp_flag.origin = Vector(flag['X'], flag['Y'], flag['Z'] + self.flag_height)
+						if status != 'none':
+							tmp_flag.origin = Vector(flag['X'], flag['Y'], flag['Z'] + self.flag_height)
+						else:
+							tmp_flag.origin = Vector(flag['X'], flag['Y'], flag['Z'])
 						tmp_flag.model = self.model_flag
 						tmp_flag.spawn_flags = 265
 						tmp_flag.set_key_value_color('rendercolor', color)
@@ -187,6 +196,7 @@ class flags:
 							'timer': flag['timer'],
 							'status': status,
 							'tmp_status': status,
+							'tmp_conquered_by': 'none',
 							'draw': 0,
 							'timestamp': '0',
 							't_index' : [],
@@ -202,7 +212,10 @@ class flags:
 						tmp_pole.remove()
 						del tmp_flag
 						tmp_flag = Entity.create('prop_physics_override')
-						tmp_flag.origin = Vector(flag['X'], flag['Y'], flag['Z'] + self.flag_height)
+						if status != 'none':
+							tmp_flag.origin = Vector(flag['X'], flag['Y'], flag['Z'] + self.flag_height)
+						else:
+							tmp_flag.origin = Vector(flag['X'], flag['Y'], flag['Z'])
 						tmp_flag.model = self.model_flag
 						tmp_flag.spawn_flags = 265
 						tmp_flag.set_key_value_color('rendercolor', color)
@@ -226,6 +239,7 @@ class flags:
 							'timer': flag['timer'],
 							'status': status,
 							'tmp_status': status,
+							'tmp_conquered_by': 'none',
 							'draw': 0,
 							'timestamp': '0',
 							't_index' : [],
@@ -237,14 +251,20 @@ class flags:
 		except:
 			msg('ERROR', 'could not respawn a specific flag')
 
-	def set_flag_height(self, item):
+	def set_flag_height(self, item, direction = 0):
 		if item in self.flags:
 			tmp_flag = self.flags[item]['entity']
 			cur_time = int(round(time.time(),0))
 			time_left = int(self.flags[item]['timestamp']) - cur_time
 			lowest_z = self.flags[item]['Z']
-			tmp = self.flag_height / (int(self.flags[item]['timer']))
-			z = (time_left * tmp) + lowest_z
+			# if the flag should go down
+			if direction == 0:
+				tmp = self.flag_height / (int(self.flags[item]['timer']))
+				z = (time_left * tmp) + lowest_z
+			# if the flag should go up
+			else:
+				tmp = self.flag_height / (int(self.flags[item]['timer']))
+				z = (lowest_z + self.flag_height) - (time_left * tmp)
 			tmp_flag.origin = Vector(tmp_flag.origin[0], tmp_flag.origin[1], z)
 
 
@@ -269,21 +289,38 @@ class flags:
 	def capture_flag(self, item, team):
 		self.flags[item]['draw'] = 0
 		if self.flags[item]['status'] != team:
-			self.flags[item]['tmp_status'] = team
+			# first neutralize flag if is not "none"
+			if self.flags[item]['status'] != 'none':
+				self.flags[item]['tmp_status'] = 'none'
+				tmp_direction = 0
+			else:
+				self.flags[item]['tmp_status'] = team
+				tmp_direction = 1
+			# set conquered by team
+			self.flags[item]['tmp_conquered_by'] = team
 			cur_time = int(round(time.time(),0))
 			players = []
 			if 'ct_index' in self.flags[item]:
 				players.extend(self.flags[item]['ct_index'])
 			if 't_index' in self.flags[item]:
 				players.extend(self.flags[item]['t_index'])
+			# calculate time left
 			if int(self.flags[item]['timestamp']) == 0:
 				self.flags[item]['timestamp'] = cur_time + int(self.flags[item]['timer'])
 				time_left = int(self.flags[item]['timestamp']) - cur_time
+				if self.flags[item]['tmp_status'] == 'none':
+					time_left += self.flags[item]['timer']
 				HintText(message='{} captured for {} in {}'.format(item,team,time_left)).send(players)
 			elif int(self.flags[item]['timestamp']) > cur_time:
+				self.set_flag_height(item, tmp_direction)
 				time_left = int(self.flags[item]['timestamp']) - cur_time
-				self.set_flag_height(item)
+				if self.flags[item]['tmp_status'] == 'none':
+					time_left += self.flags[item]['timer']
 				HintText(message='{} captured for {} in {}'.format(item,team,time_left)).send(players)
+			# if flag belongs to one of the teams and now is "none"
+			elif self.flags[item]['tmp_status'] == 'none':
+				HintText(message='{} is neutralized!'.format(item,team)).send(players)
+				self.respawn_flag(item, 'none')
 			else:
 				HintText(message='{} is captured by {}!'.format(item,team)).send(players)
 				for index in self.flags[item][team.lower() + '_index']:
