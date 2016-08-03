@@ -11,7 +11,7 @@ from mathlib import Vector
 from filters.recipients import RecipientFilter
 from engines.server import global_vars, engine_server
 from cvars.flags import ConVarFlags
-from effects import polygon
+from effects import ball
 from entities.entity import Entity
 from messages import HintText
 from filters.players import PlayerIter
@@ -200,7 +200,6 @@ class flags:
 						tmp_flag.remove()
 						tmp_pole = self.flags[name]['entity_pole']
 						tmp_pole.remove()
-						del self.flags[name]
 						del tmp_flag
 						tmp_flag = Entity.create('prop_physics_override')
 						tmp_flag.origin = Vector(flag['X'], flag['Y'], flag['Z'] + self.flag_height)
@@ -244,8 +243,7 @@ class flags:
 			cur_time = int(round(time.time(),0))
 			time_left = int(self.flags[item]['timestamp']) - cur_time
 			lowest_z = self.flags[item]['Z']
-			flag_height = self.flag_height
-			tmp = flag_height / self.flags[item]['timer']
+			tmp = self.flag_height / (int(self.flags[item]['timer']))
 			z = (time_left * tmp) + lowest_z
 			tmp_flag.origin = Vector(tmp_flag.origin[0], tmp_flag.origin[1], z)
 
@@ -292,6 +290,10 @@ class flags:
 					player = Player(index)
 					self.rank.player_add_cash(player.userid, 100)
 				self.respawn_flag(item, team)
+		else:
+			# respawn flag if neccessary
+			if int(self.flags[item]['timestamp']) > 0:
+				self.respawn_flag(item, team)
 
 	def neutralize_flag(self, item):
 		cur_time = int(round(time.time(),0))
@@ -304,43 +306,31 @@ class flags:
 		# in draw the countdown should not go on.. so we need to "freeze" the time
 		self.flags[item]['timestamp'] = (int(self.flags[item]['timestamp']) - cur_time) + cur_time
 		HintText(message='{} is in draw!'.format(item)).send(players)
-
-	def spawn_flag_circle(self, vector, radius, r, g, b, a=255):
-		t = GameThread(target=self.flag_circle, args=(vector, radius, r, g, b, a,))
-		t.start()
-
+	
 	def flag_circle(self, vector, radius, r, g, b, a=255):
-		try:
-			xc = vector[0]
-			yc = vector[1]
-			zc = vector[2]
-			points = []
-			for steps in range(1, 42):
-				phi = (2*math.pi/40)*steps
-				x = radius*math.cos(phi)
-				y = radius*math.sin(phi)
-				points.append(Vector(xc+x,yc+y,zc+50))
-			polygon(
-				RecipientFilter(),
-				points,
-				alpha=a,
-				blue=b,
-				green=g,
-				red=r,
-				amplitude=0,
-				end_width=1,
-				life_time=2,
-				start_width=1,
-				fade_length=0,
-				flags=0,
-				frame_rate=1,
-				halo=self.model_beam,
-				model=self.model_beam,
-				start_frame=0
-			)
-		except:
-			msg('ERROR', 'could not spawn a circle for flag')
-			return None
+		vector = Vector(vector[0], vector[1], vector[2] + 50)
+		ball(
+			RecipientFilter(),
+			vector,
+			radius,
+			steps=1,
+			upper_half=True,
+			lower_half=False,
+			alpha=a,
+			blue=b,
+			green=g,
+			red=r,
+			halo=Model('sprites/laserbeam.vmt'),
+			model=Model('sprites/laserbeam.vmt'),
+			amplitude=0,
+			end_width=1,
+			life_time=2,
+			start_width=1,
+			fade_length=0,
+			flags=0,
+			frame_rate=1,
+			start_frame=0
+		)
 
 	def player_death(self, userid):
 		try:
@@ -354,60 +344,71 @@ class flags:
 		except:
 			msg('ERROR', 'could not remove a ticket on player_death')
 
-	def ontick(self):
+	def ontick_flags(self):
 		cur_time = int(round(time.time(),0))
-		self.last_ontick += 1
-		if self.last_ontick >= 32:
-			self.last_ontick = 0
-			# reset counter for all flags (we need to count them again)
-			for item in self.flags:
+		# reset counter for teams at flags
+		for item in self.flags:
 				self.flags[item]['count_t'] = 0
 				self.flags[item]['count_ct'] = 0
 				self.flags[item]['ct_index'] = []
 				self.flags[item]['t_index'] = []
-			# count every player in near of the flags
-			for player in PlayerIter():
-				if player.dead:
-					continue
-				if player.team not in (2, 3):
-					continue
-				if player.frozen:
-					continue
-				for item in self.flags:
-					tmp_flag = self.flags[item]['entity']
-					tmp_pole = self.flags[item]['entity_pole']
-					if player.origin.get_distance(tmp_pole.origin) <= self.flags[item]['distance']:
-						if player.team == 3:
-							self.flags[item]['count_ct'] += 1
-							self.flags[item]['ct_index'].append(player.index)
-						else:
-							self.flags[item]['count_t'] += 1
-							self.flags[item]['t_index'].append(player.index)
-			# if some players in the radius of a flag
+		# count every player in near of the flags
+		for player in PlayerIter():
+			if player.dead:
+				continue
+			if player.team not in (2,3):
+				continue
+			if player.frozen:
+				continue
+			# check if player is in near of a flag
 			for item in self.flags:
+				#get objects
 				tmp_flag = self.flags[item]['entity']
 				tmp_pole = self.flags[item]['entity_pole']
-				# if more T then CT
-				if self.flags[item]['count_t'] > self.flags[item]['count_ct']:
-					self.capture_flag(item, 'T')
-				# if more CT then T
-				elif self.flags[item]['count_t'] < self.flags[item]['count_ct']:
-					self.capture_flag(item, 'CT')
-				# if we have both teams same size in the near
-				elif self.flags[item]['count_t'] > 0 and self.flags[item]['count_ct'] > 0:
-					self.neutralize_flag(item)
-				# reset the flag state...
-				elif self.flags[item]['timestamp'] != '0':
-					self.respawn_flag(item, self.flags[item]['status'])
-				# circle around flags
-				if int(self.flags[item]['last_glow']) <= cur_time:
-					self.flags[item]['last_glow'] = cur_time + 2
-					if self.flags[item]['status'] == 'T':
-						self.spawn_flag_circle(Vector(self.flags[item]['X'], self.flags[item]['Y'], self.flags[item]['Z']), self.flags[item]['distance'], 255, 0, 0)
-					elif self.flags[item]['status'] == 'CT':
-						self.spawn_flag_circle(Vector(self.flags[item]['X'], self.flags[item]['Y'], self.flags[item]['Z']), self.flags[item]['distance'], 0, 0, 255)
+				# if player is in near of that flag
+				if player.origin.get_distance(tmp_pole.origin) <= self.flags[item]['distance']:
+					# add player to the list of flags
+					if player.team == 3:
+						self.flags[item]['count_ct'] += 1
+						self.flags[item]['ct_index'].append(player.index)
 					else:
-						self.spawn_flag_circle(Vector(self.flags[item]['X'], self.flags[item]['Y'], self.flags[item]['Z']), self.flags[item]['distance'], 255, 255, 255)
+						self.flags[item]['count_t'] += 1
+						self.flags[item]['t_index'].append(player.index)
+					# player can't be in the near of another flag so break the for loop
+					break
+		# check flags for some players in radius
+		for item in self.flags:
+			# get objects
+			tmp_flag = self.flags[item]['entity']
+			tmp_pole = self.flags[item]['entity_pole']
+			# draw circle to mark radius of flag
+			if int(self.flags[item]['last_glow']) <= cur_time:
+				self.flags[item]['last_glow'] = cur_time + 2
+				if self.flags[item]['status'] == 'T':
+					self.flag_circle(tmp_pole.origin, self.flags[item]['distance'], 255, 0, 0)
+				elif self.flags[item]['status'] == 'CT':
+					self.flag_circle(tmp_pole.origin, self.flags[item]['distance'], 0, 0, 255)
+				else:
+					self.flag_circle(tmp_pole.origin, self.flags[item]['distance'], 255, 255, 255)
+			# if there are no player in radius
+			if int(self.flags[item]['count_t']) == 0 and int(self.flags[item]['count_ct']) == 0:
+				# reset flag state
+				# TODO: reset only if flag has a wrong status
+				if int(self.flags[item]['timestamp']) != 0:
+					self.respawn_flag(item, self.flags[item]['status'])
+				continue
+			# if more T then CT
+			if int(self.flags[item]['count_t']) > int(self.flags[item]['count_ct']):
+				self.capture_flag(item, 'T')
+			# if more CT then T
+			elif int(self.flags[item]['count_t']) < int(self.flags[item]['count_ct']):
+				self.capture_flag(item, 'CT')
+			# if both teams have the same amount of players in radius
+			elif int(self.flags[item]['count_t']) == int(self.flags[item]['count_ct']):
+				self.neutralize_flag(item)
+
+	def ontick_tickets(self):
+		cur_time = int(round(time.time(),0))
 		if int(self.tickets['time']) <= cur_time:
 			self.tickets['time'] = cur_time + 1
 			tmp_t = 0
@@ -430,9 +431,19 @@ class flags:
 			else:
 				if int(self.tickets['ct']) <= 0 or int(self.tickets['t']) <= 0:
 					if int(self.tickets['ct']) < int(self.tickets['t']):
+						self.tickets['ct'] = 0
 						self.endround(8)
 					elif int(self.tickets['ct']) > int(self.tickets['t']):
+						self.tickets['t'] = 0
 						self.endround(7)
+
+	def ontick(self):
+		# do not work on every tick
+		self.last_ontick += 1
+		if self.last_ontick >= 16:
+			self.last_ontick = 0
+			self.ontick_flags()
+			self.ontick_tickets()
 
 	def restartround(self):
 		ENDROUND_TEXT = 'endround'
