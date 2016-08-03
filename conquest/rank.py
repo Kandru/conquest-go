@@ -79,6 +79,8 @@ class rank:
 	def get_player_data(self, userid):
 		try:
 			player = Player.from_userid(userid)
+			if not player.address or player.steamid == 'BOT':
+				return
 			sql = "SELECT * FROM players WHERE steamid = %s LIMIT 0,1"
 			row = self.db.query(sql, (player.steamid,), fetch_all = False)
 			if row:
@@ -101,6 +103,8 @@ class rank:
 	def insert_player_data(self, userid):
 		try:
 			player = Player.from_userid(userid)
+			if not player.address or player.steamid == 'BOT':
+				return
 			tmp_rank = {}
 			for item in self.classes:
 				tmp_rank[item] = 1
@@ -112,6 +116,8 @@ class rank:
 	def update_player_data(self, userid, data):
 		try:
 			player = Player.from_userid(userid)
+			if not player.address or player.steamid == 'BOT':
+				return
 			tmp_keys = ''
 			tmp_values = []
 			lock = False
@@ -142,6 +148,8 @@ class rank:
 	def player_spawn(self, userid):
 		try:
 			player = Player.from_userid(userid)
+			if not player.address or player.steamid == 'BOT':
+				return
 			if player.team == 3:
 				pteam = 'CT'
 			else:
@@ -187,6 +195,8 @@ class rank:
 	def player_death(self, userid, attacker):
 		try:
 			player = Player.from_userid(userid)
+			if not player.address or player.steamid == 'BOT':
+				return
 			self.update_player_data(userid, {
 				'cash': player.cash,
 				'username': player.name,
@@ -201,6 +211,8 @@ class rank:
 	def player_say(self, userid, text):
 		try:
 			player = Player.from_userid(userid)
+			if not player.address or player.steamid == 'BOT':
+				return
 			self.player_data_lock.acquire()
 			if player.steamid not in self.players:
 				self.player_data_lock.release()
@@ -240,6 +252,8 @@ class rank:
 	def player_check_rank(self, userid):
 		try:
 			player = Player.from_userid(userid)
+			if not player.address or player.steamid == 'BOT':
+				return
 			if player.team == 3:
 				pteam = 'CT'
 			else:
@@ -272,6 +286,8 @@ class rank:
 	def player_add_cash(self, userid, amount):
 		try:
 			player = Player.from_userid(userid)
+			if not player.address or player.steamid == 'BOT':
+				return
 			player.cash = player.cash + amount
 			self.update_player_data(userid, {
 				'cash': player.cash
@@ -283,7 +299,7 @@ class rank:
 	def player_give_weapon(self, userid):
 		try:
 			player = Player.from_userid(userid)
-			if not player.address:
+			if not player.address or player.steamid == 'BOT':
 				return
 			if player.team == 3:
 				pteam = 'CT'
@@ -319,6 +335,8 @@ class rank:
 
 	def menu_select_class(self, userid):
 		player = Player.from_userid(userid)
+		if not player.address or player.steamid == 'BOT':
+			return
 		pdata = self.get_player_data(userid)
 		menu = ExtendedPagedMenu(title='Select Class', select_callback=self.menu_select_class_callback, on_close_menu=self.menu_select_class_close_callback)
 		for item in self.classes:
@@ -343,19 +361,24 @@ class rank:
 			msg('ERROR', 'could not send class close callback to player')
 			
 	def menu_select_skin(self, userid):
-		player = Player.from_userid(userid)
-		if player.team == 3:
-			pteam = 'CT'
-		else:
-			pteam = 'T'
-		pdata = self.get_player_data(userid)
-		menu = ExtendedPagedMenu(title='Select Skin', select_callback=self.menu_select_skin_callback, on_close_menu=self.menu_skin_close_callback)
-		for item in self.skins:
-			# only if the usergroup is high enough
-			if int(self.skins[item]['group']) <= int(pdata['group']) and (self.skins[item]['team'] == pteam or not self.skins[item]['team']):
-				menu.append(PagedOption('{}'.format(self.skins[item]['name']), str(item), selectable=True))
-		menu.append(PagedOption('default skin', str(0), selectable=True))
-		menu.send(player.index)
+		try:
+			player = Player.from_userid(userid)
+			if not player.address or player.steamid == 'BOT':
+				return
+			if player.team == 3:
+				pteam = 'CT'
+			else:
+				pteam = 'T'
+			pdata = self.get_player_data(userid)
+			menu = ExtendedPagedMenu(title='Select Skin', select_callback=self.menu_select_skin_callback, on_close_menu=self.menu_skin_close_callback)
+			for item in self.skins:
+				# only if the usergroup is high enough
+				if int(self.skins[item]['group']) <= int(pdata['group']) and (self.skins[item]['team'] == pteam or not self.skins[item]['team']):
+					menu.append(PagedOption('{}'.format(self.skins[item]['name']), str(item), selectable=True))
+			menu.append(PagedOption('default skin', str(0), selectable=True))
+			menu.send(player.index)
+		except:
+			msg('ERROR', 'could not send select skin menu to player')
 
 	def menu_select_skin_callback(self, menu, pindex, option):
 		try:
@@ -387,6 +410,8 @@ class rank:
 	def menu_select_pweapon(self, userid):
 		try:
 			player = Player.from_userid(userid)
+			if not player.address or player.steamid == 'BOT':
+				return
 			if player.team == 3:
 				pteam = 'CT'
 			else:
@@ -436,6 +461,8 @@ class rank:
 	def menu_select_sweapon(self, userid):
 		try:
 			player = Player.from_userid(userid)
+			if not player.address or player.steamid == 'BOT':
+				return
 			if player.team == 3:
 				pteam = 'CT'
 			else:
