@@ -343,7 +343,7 @@ class flags:
 			# respawn flag if neccessary
 			if int(self.flags[item]['timestamp']) > 0:
 				self.respawn_flag(item, team)
-			if attacker_team is not 'none':
+			if 'count_' + attacker_team.lower() in self.flags[item]:
 				if int(self.flags[item]['count_' + attacker_team.lower()]) > 0:
 					self.draw_flag(item)
 
