@@ -76,6 +76,11 @@ def player_connect_full(event):
 	global class_rank
 	class_rank.player_connect_full(event['userid'])
 	
+@Event('begin_new_match')
+def begin_new_match(event):
+	global class_rank
+	class_rank.begin_new_match()
+
 @Event('player_say')
 def player_say(event):
 	global class_rank, class_flags, player1, player2, chicken_coord

@@ -12,6 +12,7 @@ from menus import PagedOption
 from messages import SayText2
 from engines.precache import Model
 from colors import Color
+from filters.players import PlayerIter
 
 from conquest.debug import msg
 from conquest.extendedpagedmenu import ExtendedPagedMenu
@@ -34,6 +35,7 @@ class rank:
 		self.get_weapons()
 		self.get_skins()
 		self.player_data_lock = Lock()
+		self.is_round = False
 
 	def get_ranks(self):
 		sql = "SELECT * FROM ranks ORDER BY id ASC"
@@ -89,6 +91,8 @@ class rank:
 					row['rank'] = json.loads(row['rank'])
 				if row['skin']:
 					row['skin'] = json.loads(row['skin'])
+				if row['loadout1']:
+					row['loadout1'] = json.loads(row['loadout1'])
 			else:
 				# if user does not exist in our database
 				self.insert_player_data(userid)
@@ -142,55 +146,84 @@ class rank:
 	def player_connect_full(self, userid):
 		# initialize player data
 		self.get_player_data(userid)
-		# reset player data
-		self.update_player_data(userid, {'spawn_menu_active': 0})
-			
+		
+	def begin_new_match(self):
+		self.is_round = True
+		for player in PlayerIter():
+			if player.dead:
+				continue
+			if player.team not in (2,3):
+				continue
+			if player.frozen:
+				continue
+			self.player_spawn_logic(player.userid)
+	
+	def get_player_team(self, userid):
+		try:
+			player = Player.from_userid(userid)
+			if player.team == 3:
+				return 'CT'
+			else:
+				return 'T'
+		except:
+			msg('ERROR', 'could not get player team')
+	
+	def player_spawn_logic(self, userid):
+		try:
+			player = Player.from_userid(userid)
+			if not player.address or player.steamid == 'BOT':
+				return
+			pdata = self.get_player_data(userid)
+			# get player team
+			pteam = self.get_player_team(userid)
+			# only in real match, not in warmup...
+			if int(pdata['class']) == 0:
+				self.menu_select_class(userid)
+			# if a user does have a default weapon
+			elif not pteam in pdata['loadout1']:
+				self.menu_select_pweapon(userid)
+			# if a user does not have a default weapon for specific class
+			elif not str(pdata['class']) in pdata['loadout1'][pteam]:
+				self.menu_select_pweapon(userid)
+			else:
+				# if player want to change weapons on next respawn
+				if int(pdata['change_loadout1']) == 1:
+					self.update_player_data(player.userid, {
+						'change_loadout1': 0
+					})
+					self.menu_select_pweapon(userid)
+				elif int(pdata['change_class']) == 1:
+					self.update_player_data(player.userid, {
+						'change_class': 0
+					})
+					self.menu_select_class(userid)
+				elif int(pdata['change_skin']) == 1:
+					self.update_player_data(player.userid, {
+						'change_skin': 0
+					})
+					self.menu_select_skin(userid)
+				else:
+					self.player_give_weapon(userid)
+		except:
+			msg('ERROR', 'player spawn logic did not work')
+		
 	def player_spawn(self, userid):
 		try:
 			player = Player.from_userid(userid)
 			if not player.address or player.steamid == 'BOT':
 				return
-			if player.team == 3:
-				pteam = 'CT'
-			else:
-				pteam = 'T'
-			# update player data dict (to have right cash value etc)
 			pdata = self.get_player_data(userid)
-			# only in real match, not in warmup...
-			if int(pdata['spawn_menu_active']) == 0:
-				self.update_player_data(userid, {'spawn_menu_active': 1})
-				if int(pdata['class']) == 0:
-					self.menu_select_class(userid)
-				# if a user does not have chosen a weapon we need to help him...
-				elif not pdata['loadout1']: #fixme open menu if someone hasnt a weapon for a specific class...
-					self.menu_select_pweapon(userid)
-				else:
-					# if player want to change weapons on next respawn
-					if int(pdata['change_loadout1']) == 1:
-						self.update_player_data(player.userid, {
-							'change_loadout1': 0
-						})
-						self.menu_select_pweapon(userid)
-					elif int(pdata['change_class']) == 1:
-						self.update_player_data(player.userid, {
-							'change_class': 0
-						})
-						self.menu_select_class(userid)
-					elif int(pdata['change_skin']) == 1:
-						self.update_player_data(player.userid, {
-							'change_skin': 0
-						})
-						self.menu_select_skin(userid)
-					else:
-						self.player_give_weapon(userid)
-			else:
-				self.player_give_weapon(userid)
+			# if is round
+			if self.is_round:
+				self.player_spawn_logic(userid)
+			# get player team
+			pteam = self.get_player_team(userid)
 			# set player skin
 			if pteam in pdata['skin']:
 				if int(pdata['skin'][pteam]) != 0:
 					self.player_set_model(userid, pdata['skin'][pteam])
 		except:
-			msg('ERROR', 'could not grep player rank data')
+			msg('ERROR', 'could not execute player spawn function')
 
 	def player_death(self, userid, attacker):
 		try:
@@ -199,8 +232,7 @@ class rank:
 				return
 			self.update_player_data(userid, {
 				'cash': player.cash,
-				'username': player.name,
-				'spawn_menu_active': 0
+				'username': player.name
 			})
 			# give player cash
 			if userid != attacker:
@@ -254,10 +286,8 @@ class rank:
 			player = Player.from_userid(userid)
 			if not player.address or player.steamid == 'BOT':
 				return
-			if player.team == 3:
-				pteam = 'CT'
-			else:
-				pteam = 'T'
+			# get player team
+			pteam = self.get_player_team(userid)
 			pdata = self.get_player_data(userid)
 			if player.steamid in self.players:
 				new_rank = int(pdata['rank'][str(pdata['class'])]) + 1
@@ -301,10 +331,8 @@ class rank:
 			player = Player.from_userid(userid)
 			if not player.address or player.steamid == 'BOT':
 				return
-			if player.team == 3:
-				pteam = 'CT'
-			else:
-				pteam = 'T'
+			# get player team
+			pteam = self.get_player_team(userid)
 			pdata = self.get_player_data(userid)
 			for index in player.weapon_indexes():
 				weapon = Entity(index)
@@ -312,13 +340,12 @@ class rank:
 				weapon.remove()
 			# get new weapons
 			player.give_named_item('weapon_knife', 0, None, True)
-			loadout1 = json.loads(pdata['loadout1'])
-			if pteam in loadout1:
-				if str(pdata['class']) in loadout1[pteam]:
-					if 'primary' in loadout1[pteam][str(pdata['class'])]:
-						player.give_named_item(loadout1[pteam][str(pdata['class'])]['primary'], 0, None, True)
-					if 'secondary' in loadout1[pteam][str(pdata['class'])]:
-						player.give_named_item(loadout1[pteam][str(pdata['class'])]['secondary'], 0, None, True)
+			if pteam in pdata['loadout1']:
+				if str(pdata['class']) in pdata['loadout1'][pteam]:
+					if 'primary' in pdata['loadout1'][pteam][str(pdata['class'])]:
+						player.give_named_item(pdata['loadout1'][pteam][str(pdata['class'])]['primary'], 0, None, True)
+					if 'secondary' in pdata['loadout1'][pteam][str(pdata['class'])]:
+						player.give_named_item(pdata['loadout1'][pteam][str(pdata['class'])]['secondary'], 0, None, True)
 					for item in self.weapons:
 						if int(self.weapons[item]['rank']) <= int(pdata['rank'][str(pdata['class'])]) and int(self.weapons[item]['type']) == 3 and pteam == self.weapons[item]['team'] and int(pdata['class']) == self.weapons[item]['class']:
 							for x in range(0, self.weapons[item]['amount']):
@@ -365,10 +392,8 @@ class rank:
 			player = Player.from_userid(userid)
 			if not player.address or player.steamid == 'BOT':
 				return
-			if player.team == 3:
-				pteam = 'CT'
-			else:
-				pteam = 'T'
+			# get player team
+			pteam = self.get_player_team(userid)
 			pdata = self.get_player_data(userid)
 			menu = ExtendedPagedMenu(title='Select Skin', select_callback=self.menu_select_skin_callback, on_close_menu=self.menu_skin_close_callback)
 			for item in self.skins:
@@ -384,10 +409,8 @@ class rank:
 		try:
 			player = Player(pindex)
 			self.player_set_model(player.userid, option.value)
-			if player.team == 3:
-				pteam = 'CT'
-			else:
-				pteam = 'T'
+			# get player team
+			pteam = self.get_player_team(player.userid)
 			pdata = self.get_player_data(player.userid)
 			if not pdata['skin']:
 				pdata['skin'] = {pteam: option.value}
@@ -412,10 +435,8 @@ class rank:
 			player = Player.from_userid(userid)
 			if not player.address or player.steamid == 'BOT':
 				return
-			if player.team == 3:
-				pteam = 'CT'
-			else:
-				pteam = 'T'
+			# get player team
+			pteam = self.get_player_team(userid)
 			pdata = self.get_player_data(userid)
 			menu = ExtendedPagedMenu(title='Primary Weapon', select_callback=self.menu_select_pweapon_callback, on_close_menu=self.menu_select_pweapon_close_callback)
 			for item in self.weapons:
@@ -428,24 +449,20 @@ class rank:
 	def menu_select_pweapon_callback(self, menu, pindex, option):
 		try:
 			player = Player(pindex)
-			if player.team == 3:
-				pteam = 'CT'
-			else:
-				pteam = 'T'
+			# get player team
+			pteam = self.get_player_team(player.userid)
 			pdata = self.get_player_data(player.userid)
-			if pdata['loadout1']:
-				loadout1 = json.loads(pdata['loadout1'])
-			else:
-				loadout1 = {}
-			if pteam not in loadout1:
-				loadout1[pteam] = {}
-			if str(pdata['class']) not in loadout1[pteam]:
-				loadout1[pteam][str(pdata['class'])] = {}
-			if 'primary' not in loadout1[pteam][str(pdata['class'])]:
-				loadout1[pteam][str(pdata['class'])]['primary'] = ''
-			loadout1[pteam][str(pdata['class'])]['primary'] = self.weapons[int(option.value)]['slug']
+			if not pdata['loadout1']:
+				pdata['loadout1'] = {}
+			if pteam not in pdata['loadout1']:
+				pdata['loadout1'][pteam] = {}
+			if str(pdata['class']) not in pdata['loadout1'][pteam]:
+				pdata['loadout1'][pteam][str(pdata['class'])] = {}
+			if 'primary' not in pdata['loadout1'][pteam][str(pdata['class'])]:
+				pdata['loadout1'][pteam][str(pdata['class'])]['primary'] = ''
+			pdata['loadout1'][pteam][str(pdata['class'])]['primary'] = self.weapons[int(option.value)]['slug']
 			self.update_player_data(player.userid, {
-				'loadout1': json.dumps(loadout1)
+				'loadout1': json.dumps(pdata['loadout1'])
 			})
 			self.menu_select_sweapon(player.userid)
 		except:
@@ -463,10 +480,8 @@ class rank:
 			player = Player.from_userid(userid)
 			if not player.address or player.steamid == 'BOT':
 				return
-			if player.team == 3:
-				pteam = 'CT'
-			else:
-				pteam = 'T'
+			# get player team
+			pteam = self.get_player_team(userid)
 			pdata = self.get_player_data(userid)
 			menu = ExtendedPagedMenu(title='Secondary Weapon', select_callback=self.menu_select_sweapon_callback, on_close_menu=self.menu_select_sweapon_close_callback)
 			for item in self.weapons:
@@ -479,24 +494,20 @@ class rank:
 	def menu_select_sweapon_callback(self, menu, pindex, option):
 		try:
 			player = Player(pindex)
-			if player.team == 3:
-				pteam = 'CT'
-			else:
-				pteam = 'T'
+			# get player team
+			pteam = self.get_player_team(player.userid)
 			pdata = self.get_player_data(player.userid)
-			if pdata['loadout1']:
-				loadout1 = json.loads(pdata['loadout1'])
-			else:
-				loadout1 = {}
-			if pteam not in loadout1:
-				loadout1[pteam] = {}
-			if str(pdata['class']) not in loadout1[pteam]:
-				loadout1[pteam][str(pdata['class'])] = {}
-			if 'secondary' not in loadout1[pteam][str(pdata['class'])]:
-				loadout1[pteam][str(pdata['class'])]['secondary'] = ''
-			loadout1[pteam][str(pdata['class'])]['secondary'] = self.weapons[int(option.value)]['slug']
+			if not pdata['loadout1']:
+				pdata['loadout1'] = {}
+			if pteam not in pdata['loadout1']:
+				pdata['loadout1'][pteam] = {}
+			if str(pdata['class']) not in pdata['loadout1'][pteam]:
+				pdata['loadout1'][pteam][str(pdata['class'])] = {}
+			if 'secondary' not in pdata['loadout1'][pteam][str(pdata['class'])]:
+				pdata['loadout1'][pteam][str(pdata['class'])]['secondary'] = ''
+			pdata['loadout1'][pteam][str(pdata['class'])]['secondary'] = self.weapons[int(option.value)]['slug']
 			self.update_player_data(player.userid, {
-				'loadout1': json.dumps(loadout1)
+				'loadout1': json.dumps(pdata['loadout1'])
 			})
 			self.player_give_weapon(player.userid)
 		except:
