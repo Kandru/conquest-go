@@ -290,8 +290,15 @@ class flags:
 				del self.flags[item]
 			except:
 				msg('ERROR', 'could not destroy flag {}').format(item)
+	def draw_flag(self, item):
+		players = []
+		if 'ct_index' in self.flags[item]:
+			players.extend(self.flags[item]['ct_index'])
+		if 't_index' in self.flags[item]:
+			players.extend(self.flags[item]['t_index'])
+		HintText(message='{}: enemy is near!'.format(item)).send(players)
 
-	def capture_flag(self, item, team):
+	def capture_flag(self, item, team, attacker_team = 'none'):
 		self.flags[item]['draw'] = 0
 		if self.flags[item]['status'] != team:
 			# first neutralize flag if is not "none"
@@ -336,6 +343,9 @@ class flags:
 			# respawn flag if neccessary
 			if int(self.flags[item]['timestamp']) > 0:
 				self.respawn_flag(item, team)
+			if attacker_team is not 'none':
+				if int(self.flags[item]['count_' + attacker_team.lower()]) > 0:
+					self.draw_flag(item)
 
 	def neutralize_flag(self, item):
 		cur_time = int(round(time.time(),0))
@@ -441,10 +451,10 @@ class flags:
 				continue
 			# if more T then CT
 			if int(self.flags[item]['count_t']) > int(self.flags[item]['count_ct']):
-				self.capture_flag(item, 'T')
+				self.capture_flag(item, 'T', 'CT')
 			# if more CT then T
 			elif int(self.flags[item]['count_t']) < int(self.flags[item]['count_ct']):
-				self.capture_flag(item, 'CT')
+				self.capture_flag(item, 'CT', 'T')
 			# if both teams have the same amount of players in radius
 			elif int(self.flags[item]['count_t']) == int(self.flags[item]['count_ct']):
 				self.neutralize_flag(item)
