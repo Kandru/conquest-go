@@ -18,6 +18,7 @@ from filters.players import PlayerIter
 from cvars import cvar
 from menus import SimpleMenu
 from players.entity import Player
+from collections import OrderedDict
 
 from conquest.debug import msg
 import time
@@ -72,7 +73,8 @@ class flags:
 				menu.append('Tickets CT: ' + str(self.tickets['ct']))
 				menu.append('{} rank: {}'.format(self.rank.classes[int(pdata['class'])]['name'],str(pdata['rank'][str(pdata['class'])])))
 				menu.append('------------------')
-				for item in self.flags:
+				flags = OrderedDict(sorted(self.flags.items(), key=lambda x: x[1]['orderby']))
+				for item in flags:
 					time_left = int(self.flags[item]['timestamp']) - cur_time
 					if int(self.flags[item]['draw']) == 1:
 						menu.append(self.flags[item]['name'] + ': DRAW')
@@ -129,6 +131,7 @@ class flags:
 					tmp_pole.spawn()
 					self.flags[row['name']] = {
 						'name': row['name'],
+						'orderby': row['orderby'],
 						'X': row['X'],
 						'Y': row['Y'],
 						'Z': row['Z'],
@@ -185,6 +188,7 @@ class flags:
 						tmp_pole.spawn()
 						self.flags[flag['name']] = {
 							'name': flag['name'],
+							'orderby': flag['orderby'],
 							'X': flag['X'],
 							'Y': flag['Y'],
 							'Z': flag['Z'],
@@ -228,6 +232,7 @@ class flags:
 						tmp_pole.spawn()
 						self.flags[flag['name']] = {
 							'name': flag['name'],
+							'orderby': flag['orderby'],
 							'X': flag['X'],
 							'Y': flag['Y'],
 							'Z': flag['Z'],
