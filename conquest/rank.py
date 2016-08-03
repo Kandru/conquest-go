@@ -186,20 +186,15 @@ class rank:
 
 	def player_death(self, userid, attacker):
 		try:
-			player = Player.from_userid(attacker)
-			self.update_player_data(attacker, {
-				'cash': player.cash,
-				'username': player.name,
-				'spawn_menu_active': 0
-			})
-			self.player_check_rank(attacker)
 			player = Player.from_userid(userid)
 			self.update_player_data(userid, {
 				'cash': player.cash,
 				'username': player.name,
 				'spawn_menu_active': 0
 			})
-			self.player_check_rank(userid)
+			# give player cash
+			if userid != attacker:
+				self.player_add_cash(attacker, 25)
 		except:
 			msg('ERROR', 'could not save player rank data')
 
