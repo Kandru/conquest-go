@@ -355,8 +355,10 @@ class flags:
 		if 't_index' in self.flags[item]:
 			players.extend(self.flags[item]['t_index'])
 		self.flags[item]['draw'] = 1
+		#FIXME - does not work!
 		# in draw the countdown should not go on.. so we need to "freeze" the time
-		self.flags[item]['timestamp'] = (int(self.flags[item]['timestamp']) - cur_time) + cur_time
+		time_rest = int(self.flags[item]['timestamp']) - cur_time
+		self.flags[item]['timestamp'] = time_rest + cur_time
 		HintText(message='{} is in draw!'.format(item)).send(players)
 	
 	def flag_circle(self, vector, radius, r, g, b, a=255):
