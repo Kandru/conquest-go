@@ -16,24 +16,27 @@ from conquest.respawn import respawn
 from conquest.rank import rank
 from conquest.callbacks import callbacks
 from conquest.downloads import downloads
+from conquest.weapons import weapons
 
 class_mysql = None
 class_flags = None
 class_respawn = None
 class_rank = None
+class_weapons = None
 
 player1 = None
 player2 = None
 
 @Event('load')
 def load():
-	global class_mysql, class_flags, class_respawn, class_rank
+	global class_mysql, class_flags, class_respawn, class_rank, class_weapons
 	class_mysql = mysql()
 	class_downloads = downloads(class_mysql)
 	class_callbacks = callbacks()
 	class_rank = rank(class_mysql, class_callbacks, class_downloads)
 	class_flags = flags(class_mysql, class_rank, class_callbacks)
 	class_respawn = respawn(class_callbacks)
+	class_weapons = weapons(class_mysql, class_downloads, class_rank)
 
 @Event('unload')
 def unload():
@@ -41,9 +44,11 @@ def unload():
 
 @OnTick
 def tick_listener():
-	global class_flags
+	global class_flags, class_weapons
 	if class_flags is not None:
 		class_flags.ontick()
+	if class_weapons is not None:
+		class_weapons.ontick()
 
 @Event('round_start')
 def round_start(event):
@@ -59,10 +64,11 @@ def round_end(event):
 
 @Event('player_death')
 def player_death(event):
-	global class_respawn, class_flags, class_rank
+	global class_respawn, class_flags, class_rank, class_weapons
 	class_respawn.player_death(event['userid'])
 	class_flags.player_death(event['userid'])
 	class_rank.player_death(event['userid'], event['attacker'])
+	class_weapons.player_death(event['userid'])
 
 @Event('player_spawn')
 def player_spawn(event):
@@ -75,18 +81,28 @@ def player_spawn(event):
 def player_connect_full(event):
 	global class_rank
 	class_rank.player_connect_full(event['userid'])
-	
+
+@Event('player_disconnect')
+def player_disconnect(event):
+	global class_weapons
+	class_weapons.player_disconnect(event['userid'])
+
 @Event('begin_new_match')
 def begin_new_match(event):
 	global class_rank
 	class_rank.begin_new_match()
+	
+@Event('bomb_dropped')
+def bomb_dropped(event):
+	global class_weapons
+	class_weapons.bomb_dropped(event['userid'], event['entindex'])
 
 @Event('player_say')
 def player_say(event):
 	global class_rank, class_flags, player1, player2, chicken_coord
 	class_rank.player_say(event['userid'], event['text'])
 	player = Player.from_userid(event['userid'])
-	#player.give_named_item("weapon_hegrenade", 0, None, True)
+	#player.give_named_item("weapon_c4", 0, None, True)
 	print(str(player.origin))
 	#class_rank.player_add_cash(event['userid'],1000)
 	#if event['text'] == '1':
