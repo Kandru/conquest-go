@@ -216,6 +216,8 @@ class rank:
 			# if is round
 			if self.is_round:
 				self.player_spawn_logic(userid)
+			else:
+				self.player_give_weapon(userid)
 			# get player team
 			pteam = self.get_player_team(userid)
 			# set player skin
