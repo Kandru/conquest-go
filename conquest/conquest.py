@@ -9,6 +9,11 @@ from listeners.tick import Delay
 from players.entity import Player
 from entities.entity import Entity
 from engines.sound import Sound, StreamSound
+from entities.helpers import edict_from_pointer
+from entities.hooks import EntityCondition
+from entities.hooks import EntityPostHook
+from entities.hooks import EntityPreHook
+from memory import make_object
 
 from conquest.mysql import mysql
 from conquest.flags import flags
@@ -26,6 +31,8 @@ class_weapons = None
 
 player1 = None
 player2 = None
+
+_bump_player = None
 
 @Event('load')
 def load():
@@ -97,6 +104,11 @@ def bomb_dropped(event):
 	global class_weapons
 	class_weapons.bomb_dropped(event['userid'], event['entindex'])
 
+@Event('bomb_beep')
+def bomb_beep(event):
+	global class_weapons
+	class_weapons.bomb_beep(event['entindex'])
+
 @Event('player_say')
 def player_say(event):
 	global class_rank, class_flags, player1, player2, chicken_coord
@@ -117,3 +129,25 @@ def player_say(event):
 	#test.play([player.index])
 	#class_flags.endround(7)
 	#Sound('conquest/flags_v1/your_team_scores.wav', index=player.index, attenuation=Attenuation.STATIC).play()
+	
+@EntityPreHook(EntityCondition.is_human_player, 'bump_weapon')
+def _pre_bump_weapon(args):
+	"""Switch the player's team if they are a CT picking up the bomb."""
+	global _bump_player
+	if edict_from_pointer(args[1]).classname != 'weapon_c4':
+		return
+	_bump_player = make_object(Player, args[0])
+	if _bump_player.team == 3:
+		Entity(_bump_player.index).team = 2
+	else:
+		_bump_player = None
+
+
+@EntityPostHook(EntityCondition.is_human_player, 'bump_weapon')
+def _post_bump_weapon(args, return_value):
+	"""Switch the player's team back to CT if they just picked up the bomb."""
+	global _bump_player
+	if _bump_player is None:
+		return
+	Entity(_bump_player.index).team = 3
+	_bump_player = None

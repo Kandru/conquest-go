@@ -31,8 +31,21 @@ class weapons:
 		self.last_ontick = 0
 		
 	def bomb_dropped(self, userid, bombentindex):
-		self.create_healthpack(userid, bombentindex)
-	
+		# get c4
+		tmp_bomb = Entity(bombentindex)
+		# get origin of c4
+		vector = tmp_bomb.origin
+		# remove c4
+		tmp_bomb.remove()
+		# proof for a medkit
+		self.create_medkit(userid, bombentindex, vector)
+
+	def bomb_beep(self, bombentindex):
+		# get c4
+		tmp_bomb = Entity(bombentindex)
+		# remove c4
+		tmp_bomb.remove()
+
 	def player_death(self, userid):
 		self.delete_pack(userid)
 		
@@ -46,44 +59,48 @@ class weapons:
 			del self.pack[userid]
 		self.packs_lock.release()
 
-	def create_healthpack(self, userid, bombentindex):
+	def create_medkit(self, userid, bombentindex, vector):
 		try:
-			# get c4
-			tmp_bomb = Entity(bombentindex)
-			# get origin of c4
-			vector = tmp_bomb.origin
-			# remove c4
-			tmp_bomb.remove()
+			locked = False
 			# get player and team
 			player = Player.from_userid(userid)
+			pdata = self.rank.get_player_data(userid)
+			if not int(pdata['class']) in self.rank.classes:
+				return
+			if not self.rank.classes[int(pdata['class'])]['can_have_medkit'] >= 1:
+				return
 			pteam = self.rank.get_player_team(userid)
 			# create healthpack
-			locked = False
 			self.packs_lock.acquire()
 			locked = True
-			if not player.userid in self.pack:
-				if pteam == 'CT':
-					color = self.color_ct
-				else:
-					color = self.color_t
-				self.pack[player.userid] = {
-					'ent': Entity.create('prop_physics_override'),
-					'type': 'health',
-					'amount': 500,
-					'give': 10,
-					'distance': 100,
-					'team': pteam,
-					'next_glow': 0,
-					'color': color,
-				}
-				self.pack[player.userid]['ent'].origin = vector
-				self.pack[player.userid]['ent'].model = Model('models/props/cs_italy/bin01.mdl')
-				self.pack[player.userid]['ent'].spawn_flags = 4
-				self.pack[player.userid]['ent'].health = 10
-				self.pack[player.userid]['ent'].color = color
-				self.pack[player.userid]['ent'].health = 100
-				# spawn healthpack
-				self.pack[player.userid]['ent'].spawn()
+			# delete old medkit if we spawn a new one
+			if player.userid in self.pack:
+				self.pack[player.userid]['ent'].remove()
+				del self.pack[player.userid]
+			# set medkit color
+			if pteam == 'CT':
+				color = self.color_ct
+			else:
+				color = self.color_t
+			self.pack[player.userid] = {
+				'ent': Entity.create('prop_physics_override'),
+				'type': 'health',
+				'amount': 500,
+				'give': 10,
+				'distance': 100,
+				'userid': userid,
+				'team': pteam,
+				'next_glow': 0,
+				'color': color,
+			}
+			self.pack[player.userid]['ent'].origin = vector
+			self.pack[player.userid]['ent'].model = Model('models/props/cs_italy/bin01.mdl')
+			self.pack[player.userid]['ent'].spawn_flags = 4
+			self.pack[player.userid]['ent'].health = 10
+			self.pack[player.userid]['ent'].color = color
+			self.pack[player.userid]['ent'].health = 100
+			# spawn healthpack
+			self.pack[player.userid]['ent'].spawn()
 			self.packs_lock.release()
 			locked = False
 		except:
@@ -153,6 +170,8 @@ class weapons:
 							if player.origin.get_distance(box.origin) <= self.pack[item]['distance']:
 								old_health = player.health
 								player.health += give
+								if player.userid != int(self.pack[item]['userid']):
+									self.rank.player_add_cash(self.pack[item]['userid'], give)
 								if player.health > 100:
 									player.health = 100
 								self.pack[item]['amount'] -= give
@@ -167,4 +186,3 @@ class weapons:
 			if locked:
 				self.packs_lock.release()
 			msg('ERROR','could not finish class_weapon ontick')
-		
