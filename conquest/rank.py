@@ -13,6 +13,7 @@ from messages import SayText2
 from engines.precache import Model
 from colors import Color
 from filters.players import PlayerIter
+from listeners.tick import Delay
 
 from conquest.debug import msg
 from conquest.extendedpagedmenu import ExtendedPagedMenu
@@ -149,14 +150,6 @@ class rank:
 		
 	def begin_new_match(self):
 		self.is_round = True
-		for player in PlayerIter():
-			if player.dead:
-				continue
-			if player.team not in (2,3):
-				continue
-			if player.frozen:
-				continue
-			self.player_spawn_logic(player.userid)
 	
 	def get_player_team(self, userid):
 		try:
@@ -333,6 +326,8 @@ class rank:
 			player = Player.from_userid(userid)
 			if not player.address or player.steamid == 'BOT':
 				return
+			if player.team not in (2,3):
+				return
 			# get player team
 			pteam = self.get_player_team(userid)
 			pdata = self.get_player_data(userid)
@@ -351,7 +346,7 @@ class rank:
 					for item in self.weapons:
 						if int(self.weapons[item]['rank']) <= int(pdata['rank'][str(pdata['class'])]) and int(self.weapons[item]['type']) == 3 and pteam == self.weapons[item]['team'] and int(pdata['class']) == self.weapons[item]['class']:
 							for x in range(0, self.weapons[item]['amount']):
-								player.give_named_item(self.weapons[item]['slug'], 0, None, True)
+								Delay(0, player.give_named_item, self.weapons[item]['slug'], 0, None, True)
 			# give kevlar (and helmet on lvl 20 or above)
 			if int(pdata['rank'][str(pdata['class'])]) < 20:
 				player.give_named_item('item_kevlar', 0, None, True)
