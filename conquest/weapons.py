@@ -88,7 +88,7 @@ class weapons:
 			self.pack[player.userid] = {
 				'ent': Entity.create('prop_physics_override'),
 				'type': 'health',
-				'amount': 500,
+				'amount': 200,
 				'give': 10,
 				'distance': 100,
 				'userid': userid,
@@ -137,7 +137,7 @@ class weapons:
 			self.pack[player.userid] = {
 				'ent': Entity.create('prop_physics_override'),
 				'type': 'ammo',
-				'amount': 500,
+				'amount': 200,
 				'give': 10,
 				'distance': 100,
 				'userid': userid,
@@ -187,6 +187,18 @@ class weapons:
 			frame_rate=1,
 			start_frame=0
 		)
+
+	def get_max_ammo_of_weapon(self, weapon_index):
+		tmp_weap = Weapon(weapon_index)
+		if tmp_weap:
+			ammo = 10
+			for item in self.rank.weapons:
+				if self.rank.weapons[item]['slug'] == tmp_weap.classname:
+					ammo = self.rank.weapons[item]['max_ammo']
+					break
+			return int(ammo)
+		else:
+			return int(0)
 		
 	def ontick(self):
 		#try:
@@ -229,10 +241,29 @@ class weapons:
 								self.pack[item]['amount'] -= give
 						# ammo box
 						if self.pack[item]['type'] == 'ammo':
-							#if player.get_primary():
-							#	weapon = Weapon(player.get_primary())
-							#	if weapon:
-							#		print(weapon.get_ammo())
+							if player.get_primary():
+								weapon = Weapon(player.get_primary())
+								if weapon:
+									current = int(weapon.get_property_short('m_iPrimaryReserveAmmoCount'))
+									maxammo = self.get_max_ammo_of_weapon(player.get_primary())
+									if current < maxammo:
+										if not int(current) + int(give) < maxammo:
+											give = int(maxammo) - int(current)
+										if player.userid != int(self.pack[item]['userid']):
+											self.rank.player_add_cash(self.pack[item]['userid'], give)
+										weapon.set_property_short('m_iPrimaryReserveAmmoCount', int(current) + int(give))
+										self.pack[item]['amount'] -= give
+								weapon = Weapon(player.get_secondary())
+								if weapon:
+									current = int(weapon.get_property_short('m_iPrimaryReserveAmmoCount'))
+									maxammo = self.get_max_ammo_of_weapon(player.get_secondary())
+									if current < maxammo:
+										if not int(current) + int(give) < maxammo:
+											give = int(maxammo) - int(current)
+										if player.userid != int(self.pack[item]['userid']):
+											self.rank.player_add_cash(self.pack[item]['userid'], give)
+										weapon.set_property_short('m_iPrimaryReserveAmmoCount', int(current) + int(give))
+										self.pack[item]['amount'] -= give
 							pass
 					# remove empty boxes
 					if int(self.pack[item]['amount']) <= 0:
