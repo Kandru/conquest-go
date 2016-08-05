@@ -10,6 +10,8 @@ from threading import Lock
 from players.entity import Player
 from filters.players import PlayerIter
 from entities.entity import Entity
+from entities.constants import TakeDamage
+from entities import EntityGenerator
 from weapons.entity import Weapon
 from messages import SayText2
 from engines.precache import Model
@@ -42,6 +44,8 @@ class weapons:
 		self.create_medkit(userid, bombentindex, vector)
 		# proof for an ammobox
 		self.create_ammobox(userid, bombentindex, vector)
+		# proof for an tugs
+		self.create_tugs(userid, bombentindex, vector)
 
 	def bomb_beep(self, bombentindex):
 		# get c4
@@ -58,7 +62,9 @@ class weapons:
 	def delete_pack(self, userid):
 		self.packs_lock.acquire()
 		if userid in self.pack:
-			self.pack[userid]['ent'].remove()
+			box = self.get_entity(userid)
+			if box is not None:
+				box.remove()
 			del self.pack[userid]
 		self.packs_lock.release()
 
@@ -73,13 +79,11 @@ class weapons:
 			if not self.rank.classes[int(pdata['class'])]['can_have_medkit'] >= 1:
 				return
 			pteam = self.rank.get_player_team(userid)
+			# delete old medkit if we spawn a new one
+			self.delete_pack(userid)
 			# create healthpack
 			self.packs_lock.acquire()
 			locked = True
-			# delete old medkit if we spawn a new one
-			if player.userid in self.pack:
-				self.pack[player.userid]['ent'].remove()
-				del self.pack[player.userid]
 			# set medkit color
 			if pteam == 'CT':
 				color = self.color_ct
@@ -96,14 +100,15 @@ class weapons:
 				'next_glow': 0,
 				'color': color,
 			}
-			self.pack[player.userid]['ent'].origin = vector
-			self.pack[player.userid]['ent'].model = Model('models/props/cs_italy/bin01.mdl')
-			self.pack[player.userid]['ent'].spawn_flags = 4
-			self.pack[player.userid]['ent'].health = 10
-			self.pack[player.userid]['ent'].color = color
-			self.pack[player.userid]['ent'].health = 100
+			tmp_ent.origin = vector
+			tmp_ent.model = Model('models/props/cs_italy/bin01.mdl')
+			tmp_ent.spawn_flags = 4
+			tmp_ent.color = color
 			# spawn healthpack
-			self.pack[player.userid]['ent'].spawn()
+			tmp_ent.spawn()
+			# set health
+			tmp_ent.call_input('SetHealth', 100)
+			tmp_ent.set_property_uchar("m_takedamage", TakeDamage.YES)
 			self.packs_lock.release()
 			locked = False
 		except:
@@ -122,20 +127,19 @@ class weapons:
 			if not self.rank.classes[int(pdata['class'])]['can_have_ammobox'] >= 1:
 				return
 			pteam = self.rank.get_player_team(userid)
+			# delete old medkit if we spawn a new one
+			self.delete_pack(userid)
 			# create ammobox
 			self.packs_lock.acquire()
 			locked = True
-			# delete old ammobox if we spawn a new one
-			if player.userid in self.pack:
-				self.pack[player.userid]['ent'].remove()
-				del self.pack[player.userid]
 			# set ammobox color
 			if pteam == 'CT':
 				color = self.color_ct
 			else:
 				color = self.color_t
+			tmp_ent = Entity.create('prop_physics_override')
 			self.pack[player.userid] = {
-				'ent': Entity.create('prop_physics_override'),
+				'ent': tmp_ent.index,
 				'type': 'ammo',
 				'amount': 200,
 				'give': 10,
@@ -145,20 +149,70 @@ class weapons:
 				'next_glow': 0,
 				'color': color,
 			}
-			self.pack[player.userid]['ent'].origin = vector
-			self.pack[player.userid]['ent'].model = Model('models/props/cs_italy/bin02.mdl')
-			self.pack[player.userid]['ent'].spawn_flags = 4
-			self.pack[player.userid]['ent'].health = 10
-			self.pack[player.userid]['ent'].color = color
-			self.pack[player.userid]['ent'].health = 100
-			# spawn healthpack
-			self.pack[player.userid]['ent'].spawn()
+			tmp_ent.origin = vector
+			tmp_ent.model = Model('models/props/cs_italy/bin02.mdl')
+			tmp_ent.spawn_flags = 4
+			tmp_ent.color = color
+			# spawn ammobox
+			tmp_ent.spawn()
+			# set health
+			tmp_ent.call_input('SetHealth', 100)
+			tmp_ent.set_property_uchar("m_takedamage", TakeDamage.YES)
 			self.packs_lock.release()
 			locked = False
 		except:
 			if locked:
 				self.packs_lock.release()
-			msg('ERROR', 'could not create healthpack')
+			msg('ERROR', 'could not create ammobox')
+
+	def create_tugs(self, userid, bombentindex, vector):
+		try:
+			locked = False
+			# get player and team
+			player = Player.from_userid(userid)
+			pdata = self.rank.get_player_data(userid)
+			if not int(pdata['class']) in self.rank.classes:
+				return
+			if not self.rank.classes[int(pdata['class'])]['can_have_tugs'] >= 1:
+				return
+			pteam = self.rank.get_player_team(userid)
+			# delete old medkit if we spawn a new one
+			self.delete_pack(userid)
+			# create tugs
+			self.packs_lock.acquire()
+			locked = True
+			# set tugs color
+			if pteam == 'CT':
+				color = self.color_ct
+			else:
+				color = self.color_t
+			tmp_ent = Entity.create('prop_physics_override')
+			self.pack[player.userid] = {
+				'ent': tmp_ent.index,
+				'type': 'tugs',
+				'amount': int(round(time.time(),0)),
+				'give': 30,
+				'distance': 2000,
+				'userid': userid,
+				'team': pteam,
+				'next_glow': 0,
+				'color': color,
+			}
+			tmp_ent.origin = vector
+			tmp_ent.model = Model('models/props/cs_italy/chianti02.mdl')
+			tmp_ent.spawn_flags = 4
+			tmp_ent.color = color
+			# spawn tugs
+			tmp_ent.spawn()
+			# set health
+			tmp_ent.call_input('SetHealth', 100)
+			tmp_ent.set_property_uchar("m_takedamage", TakeDamage.YES)
+			self.packs_lock.release()
+			locked = False
+		except:
+			if locked:
+				self.packs_lock.release()
+			msg('ERROR', 'could not create ammobox')
 		
 	def weapon_circle(self, vector, radius, color, a=255):
 		r = color[0]
@@ -199,7 +253,14 @@ class weapons:
 			return int(ammo)
 		else:
 			return int(0)
-		
+
+	def get_entity(self, item):
+		if item in self.pack:
+			# try to get entity. If it does not exist just delete it (it may got shot by someone)
+			try:
+				return Entity(self.pack[item]['ent'])
+			except:
+				return None
 	def ontick(self):
 		#try:
 		# do not work on every tick
@@ -211,7 +272,10 @@ class weapons:
 			locked = True
 			tmp_delete = []
 			for item in self.pack:
-				box = self.pack[item]['ent']
+				box = self.get_entity(item)
+				if box is None:
+					tmp_delete.append(item)
+					continue
 				give = self.pack[item]['give']
 				if self.pack[item]['next_glow'] <= cur_time:
 					self.pack[item]['next_glow'] = cur_time + 4
@@ -264,13 +328,29 @@ class weapons:
 											self.rank.player_add_cash(self.pack[item]['userid'], give)
 										weapon.set_property_short('m_iPrimaryReserveAmmoCount', int(current) + int(give))
 										self.pack[item]['amount'] -= give
-							pass
+						# tugs
+						if self.pack[item]['type'] == 'tugs':
+							if pteam == 'CT':
+								eteam = 'T'
+							else:
+								eteam = 'CT'
+							for enemy in PlayerIter(eteam.lower()):
+								try:
+									player.set_property_int("m_bPlayerSpotted.{0:03d}".format(enemy.index), 1)
+								except:
+									pass
+							# if tugs timelimit is reached
+							if int(self.pack[item]['amount']) + int(give) < int(round(time.time(),0)):
+								box.remove()
+								tmp_delete.append(item)
 					# remove empty boxes
 					if int(self.pack[item]['amount']) <= 0:
-						box.remove()
+						if box:
+							box.remove()
 						tmp_delete.append(item)
 			for item in tmp_delete:
-				del self.pack[item]
+				if item in self.pack:
+					del self.pack[item]
 			self.packs_lock.release()
 			locked = False
 		#except:
