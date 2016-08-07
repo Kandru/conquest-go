@@ -40,7 +40,6 @@ class respawn:
 				return
 			if player.team not in (2, 3) and ignore_team == False:
 				return
-			print('spawn')
 			player.player_state = 0
 			player.life_state = LifeState.ALIVE
 			player.respawn()
@@ -95,7 +94,6 @@ class respawn:
 			
 	def player_team(self, userid, oldteam, newteam):
 		try:
-			print('teamchange')
 			if newteam in (2, 3) and oldteam not in (2, 3):
 				Delay(1, self.respawnplayer, userid, ignore_team = True)
 		except:
