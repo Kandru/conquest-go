@@ -6,6 +6,7 @@
 from events import Event
 from listeners import OnTick
 from players.entity import Player
+from filters.entities import EntityIter
 from entities.entity import Entity
 from entities.helpers import edict_from_pointer
 from entities.hooks import EntityCondition
@@ -61,6 +62,9 @@ def round_start(event):
 	class_flags.reset_flags()
 	class_flags.reset_tickets()
 	class_flags.spawn_flags()
+	# remove all hostages
+	for item in EntityIter('hostage_entity'):
+		item.remove()
 
 @Event('round_end')
 def round_end(event):
