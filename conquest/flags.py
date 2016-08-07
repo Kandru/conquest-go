@@ -311,8 +311,6 @@ class flags:
 			else:
 				self.flags[item]['tmp_status'] = team
 				tmp_direction = 1
-			# set conquered by team
-			self.flags[item]['tmp_conquered_by'] = team
 			cur_time = int(round(time.time(),0))
 			players = []
 			if 'ct_index' in self.flags[item]:
@@ -320,8 +318,9 @@ class flags:
 			if 't_index' in self.flags[item]:
 				players.extend(self.flags[item]['t_index'])
 			# calculate time left
-			if int(self.flags[item]['timestamp']) == 0:
+			if int(self.flags[item]['timestamp']) == 0 or self.flags[item]['tmp_conquered_by'] != team:
 				self.flags[item]['timestamp'] = cur_time + int(self.flags[item]['timer'])
+				self.flags[item]['tmp_conquered_by'] = team
 				time_left = int(self.flags[item]['timestamp']) - cur_time
 				if self.flags[item]['tmp_status'] == 'none':
 					time_left += self.flags[item]['timer']
@@ -450,7 +449,6 @@ class flags:
 			# if there are no player in radius
 			if int(self.flags[item]['count_t']) == 0 and int(self.flags[item]['count_ct']) == 0:
 				# reset flag state
-				# TODO: reset only if flag has a wrong status
 				if int(self.flags[item]['timestamp']) != 0:
 					self.respawn_flag(item, self.flags[item]['status'])
 				continue
