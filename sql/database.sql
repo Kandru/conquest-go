@@ -27,6 +27,7 @@ CREATE TABLE `classes` (
   `name` varchar(255) COLLATE utf8_bin NOT NULL,
   `can_have_medkit` int(1) NOT NULL DEFAULT '0',
   `can_have_ammobox` int(1) NOT NULL DEFAULT '0',
+  `can_have_tugs` int(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -37,7 +38,7 @@ CREATE TABLE `classes` (
 
 LOCK TABLES `classes` WRITE;
 /*!40000 ALTER TABLE `classes` DISABLE KEYS */;
-INSERT INTO `classes` VALUES (1,'Support',0,1),(2,'Engineer',0,0),(3,'Recon',0,0),(4,'Assault',1,0);
+INSERT INTO `classes` VALUES (1,'Support',0,1,0),(2,'Engineer',0,0,0),(3,'Recon',0,0,1),(4,'Assault',1,0,0);
 /*!40000 ALTER TABLE `classes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -204,4 +205,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-08-05 12:59:24
+-- Dump completed on 2016-08-07 17:05:33
