@@ -43,6 +43,7 @@ class flags:
 		self.callbacks = callbacks
 		self.sounds = sounds
 		self.last_ontick = 0
+		self.is_endround = False
 		# register callbacks
 		self.callbacks.register('player_is_spawned', 'flags_info_menu', self.info_menu)
 
@@ -280,6 +281,7 @@ class flags:
 
 	def reset_tickets(self):
 		self.tickets = {'t': self.num_tickets.get_int(), 'ct': self.num_tickets.get_int(), 'time': 0}
+		self.is_endround = False
 
 	def remove_flags(self):
 		for item in self.flags:
@@ -528,7 +530,9 @@ class flags:
 		15 World        "Game_Commencing"
 		16 World        "UNKNOWN"
 		"""
-		info_map_parameters = Entity.find_or_create("info_map_parameters")
-		info_map_parameters.call_input('FireWinCondition', condition)
-		# play sound
-		self.sounds.play_random('endround')
+		if self.is_endround == False:
+			self.is_endround = True
+			info_map_parameters = Entity.find_or_create("info_map_parameters")
+			info_map_parameters.call_input('FireWinCondition', condition)
+			# play sound
+			self.sounds.play_random('endround')
