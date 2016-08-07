@@ -297,13 +297,12 @@ class weapons:
 						if self.pack[item]['type'] == 'health':
 							if player.health >= 100:
 								continue
-								old_health = player.health
-								player.health += give
-								if player.userid != int(self.pack[item]['userid']):
-									self.rank.player_add_cash(self.pack[item]['userid'], give)
-								if player.health > 100:
-									player.health = 100
-								self.pack[item]['amount'] -= give
+							player.health += give
+							if player.userid != int(self.pack[item]['userid']):
+								self.rank.player_add_cash(self.pack[item]['userid'], give)
+							if player.health > 100:
+								player.health = 100
+							self.pack[item]['amount'] -= give
 						# ammo box
 						if self.pack[item]['type'] == 'ammo':
 							if player.get_primary():
