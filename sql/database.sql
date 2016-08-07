@@ -166,6 +166,32 @@ INSERT INTO `skins` VALUES (1,'Rayman','','models/player/custom_player/voikanaa/
 UNLOCK TABLES;
 
 --
+-- Table structure for table `sounds`
+--
+
+DROP TABLE IF EXISTS `sounds`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `sounds` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `type` varchar(255) COLLATE utf8_bin DEFAULT '',
+  `name` varchar(255) COLLATE utf8_bin DEFAULT NULL,
+  `file` varchar(255) COLLATE utf8_bin DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sounds`
+--
+
+LOCK TABLES `sounds` WRITE;
+/*!40000 ALTER TABLE `sounds` DISABLE KEYS */;
+INSERT INTO `sounds` VALUES (1,'endround','Monsta','conquestgo/endround/monsta.mp3'),(2,'endround','bad','conquestgo/endround/bad.mp3'),(3,'endround','badboys','conquestgo/endround/badboys.mp3'),(4,'endround','djgotusfallininlove','conquestgo/endround/djogotusfallininlove.mp3'),(5,'endround','fuckthapolice','conquestgo/endround/fuckthapolice.mp3'),(6,'endround','llelujah','conquestgo/endround/llelujah.mp3'),(7,'endround','moveit','conquestgo/endround/moveit.mp3'),(8,'endround','paperplanes','conquestgo/endround/paperplanes.mp3'),(9,'endround','partyrockanthem','conquestgo/endround/partyrockanthem.mp3'),(10,'endround','pussykiller','conquestgo/endround/pussykiller.mp3'),(11,'endround','sweat','conquestgo/endround/sweat.mp3');
+/*!40000 ALTER TABLE `sounds` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `weapons`
 --
 
@@ -205,4 +231,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-08-07 17:05:33
+-- Dump completed on 2016-08-07 18:34:40

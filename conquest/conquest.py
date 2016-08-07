@@ -20,23 +20,26 @@ from conquest.rank import rank
 from conquest.callbacks import callbacks
 from conquest.downloads import downloads
 from conquest.weapons import weapons
+from conquest.sounds import sounds
 
 class_mysql = None
 class_flags = None
 class_respawn = None
 class_rank = None
 class_weapons = None
+class_sounds = None
 
 _bump_player = None
 
 @Event('load')
 def load():
-	global class_mysql, class_flags, class_respawn, class_rank, class_weapons
+	global class_mysql, class_flags, class_respawn, class_rank, class_weapons, class_sounds
 	class_mysql = mysql()
 	class_downloads = downloads(class_mysql)
+	class_sounds = sounds(class_mysql, class_downloads)
 	class_callbacks = callbacks()
 	class_rank = rank(class_mysql, class_callbacks, class_downloads)
-	class_flags = flags(class_mysql, class_rank, class_callbacks)
+	class_flags = flags(class_mysql, class_rank, class_callbacks, class_sounds)
 	class_respawn = respawn(class_callbacks)
 	class_weapons = weapons(class_mysql, class_downloads, class_rank)
 

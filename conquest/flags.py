@@ -25,7 +25,7 @@ import time
 import math
 
 class flags:
-	def __init__(self, db, rank, callbacks):
+	def __init__(self, db, rank, callbacks, sounds):
 		self.num_tickets = ConVar("cq_numtickets", '500', 'number of tickets')
 		self.tickets = {'t': self.num_tickets.get_int(), 'ct': self.num_tickets.get_int(), 'time': 0}
 		self.color_ct = Color(0, 200, 255)
@@ -41,6 +41,7 @@ class flags:
 		self.db = db
 		self.rank = rank
 		self.callbacks = callbacks
+		self.sounds = sounds
 		self.last_ontick = 0
 		# register callbacks
 		self.callbacks.register('player_is_spawned', 'flags_info_menu', self.info_menu)
@@ -529,3 +530,5 @@ class flags:
 		"""
 		info_map_parameters = Entity.find_or_create("info_map_parameters")
 		info_map_parameters.call_input('FireWinCondition', condition)
+		# play sound
+		self.sounds.play_random('endround')
