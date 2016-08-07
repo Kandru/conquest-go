@@ -5,10 +5,8 @@
 
 from events import Event
 from listeners import OnTick
-from listeners.tick import Delay
 from players.entity import Player
 from entities.entity import Entity
-from engines.sound import Sound, StreamSound
 from entities.helpers import edict_from_pointer
 from entities.hooks import EntityCondition
 from entities.hooks import EntityPostHook
@@ -28,9 +26,6 @@ class_flags = None
 class_respawn = None
 class_rank = None
 class_weapons = None
-
-player1 = None
-player2 = None
 
 _bump_player = None
 
@@ -111,24 +106,9 @@ def bomb_beep(event):
 
 @Event('player_say')
 def player_say(event):
-	global class_rank, class_flags, player1, player2, chicken_coord
+	global class_rank
 	class_rank.player_say(event['userid'], event['text'])
-	player = Player.from_userid(event['userid'])
-	#player.give_named_item("weapon_c4", 0, None, True)
-	print(str(player.origin))
-	#class_rank.player_add_cash(event['userid'],1000)
-	#if event['text'] == '1':
-	#	player1 = event['userid']
-	#if event['text'] == '2':
-	#	player2 = event['userid']
-	#if player1 is not None and player2 is not None:
-	#	tmp = Player.from_userid(player2)
-	#	print(player.origin.get_distance(tmp.origin))
-	#class_flags.spawn_flag_circle(player.origin, int(event['text']), 255, 255, 255)
-	#test = StreamSound("music/conquest/3.mp3", download=True)
-	#test.play([player.index])
-	#class_flags.endround(7)
-	#Sound('conquest/flags_v1/your_team_scores.wav', index=player.index, attenuation=Attenuation.STATIC).play()
+	#player = Player.from_userid(event['userid'])
 	
 @EntityPreHook(EntityCondition.is_human_player, 'bump_weapon')
 def _pre_bump_weapon(args):
