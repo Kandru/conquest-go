@@ -192,7 +192,7 @@ class weapons:
 				'type': 'tugs',
 				'amount': int(round(time.time(),0)),
 				'give': 30,
-				'distance': 2000,
+				'distance': 1500,
 				'userid': userid,
 				'team': pteam,
 				'next_glow': 0,
@@ -336,7 +336,8 @@ class weapons:
 								eteam = 'CT'
 							for enemy in PlayerIter(eteam.lower()):
 								try:
-									player.set_property_int("m_bPlayerSpotted.{0:03d}".format(enemy.index), 1)
+									# make enemy visible for a short period of time
+									enemy.set_property_bool("m_bSpotted", True)
 								except:
 									pass
 							# if tugs timelimit is reached
