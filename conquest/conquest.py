@@ -81,7 +81,14 @@ def player_spawn(event):
 	player = Player.from_userid(event['userid'])
 	class_respawn.player_spawn(event['userid'], class_flags.flags)
 	class_rank.player_spawn(event['userid'])
-	
+
+@Event('player_team')
+def player_team(event):
+	global class_respawn
+	# only fire event if player is not disconnecting
+	if event['disconnect'] == False:
+		class_respawn.player_team(event['userid'], event['oldteam'], event['team'])
+
 @Event('player_connect_full')
 def player_connect_full(event):
 	global class_rank

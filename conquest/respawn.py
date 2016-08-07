@@ -31,15 +31,16 @@ class respawn:
 			msg('ERROR', 'could not get players team')
 			return 'Unknown'
 
-	def respawnplayer(self, userid):
+	def respawnplayer(self, userid, ignore_team = False):
 		try:
 			player = Player.from_userid(userid)
 			if not player:
 				return
 			if not player.dead:
 				return
-			if player.team not in (2, 3):
+			if player.team not in (2, 3) and ignore_team == False:
 				return
+			print('spawn')
 			player.player_state = 0
 			player.life_state = LifeState.ALIVE
 			player.respawn()
@@ -91,6 +92,14 @@ class respawn:
 				self.delay_spawnprotection_end(player.userid)
 		except:
 			msg('ERROR', 'could not spawn player at specific spawn point...')
+			
+	def player_team(self, userid, oldteam, newteam):
+		try:
+			print('teamchange')
+			if newteam in (2, 3) and oldteam not in (2, 3):
+				Delay(1, self.respawnplayer, userid, ignore_team = True)
+		except:
+			msg('ERROR', 'could not detect player teamchange')
 
 	def player_death(self, userid):
 		try:
