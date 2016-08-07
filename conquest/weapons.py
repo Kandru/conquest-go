@@ -89,8 +89,9 @@ class weapons:
 				color = self.color_ct
 			else:
 				color = self.color_t
+			tmp_ent = Entity.create('prop_physics_override')
 			self.pack[player.userid] = {
-				'ent': Entity.create('prop_physics_override'),
+				'ent': tmp_ent.index,
 				'type': 'health',
 				'amount': 200,
 				'give': 10,
