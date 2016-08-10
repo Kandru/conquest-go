@@ -43,6 +43,7 @@ class flags:
 		self.callbacks = callbacks
 		self.sounds = sounds
 		self.last_ontick = 0
+		self.ontick_time = 0
 		self.is_endround = False
 		# register callbacks
 		self.callbacks.register('player_is_spawned', 'flags_info_menu', self.info_menu)
@@ -77,10 +78,10 @@ class flags:
 				menu.append('------------------')
 				flags = OrderedDict(sorted(self.flags.items(), key=lambda x: x[1]['orderby']))
 				for item in flags:
-					time_left = int(self.flags[item]['timestamp']) - cur_time
+					time_left = int(int(self.flags[item]['timer']) - float(self.flags[item]['timestamp']))
 					if int(self.flags[item]['draw']) == 1:
 						menu.append(self.flags[item]['name'] + ': DRAW')
-					elif int(self.flags[item]['timestamp']) > 0 and time_left > 0:
+					elif float(self.flags[item]['timestamp']) > 0:
 						if self.flags[item]['tmp_status'] == 'none':
 							time_left += self.flags[item]['timer']
 						menu.append(self.flags[item]['name'] + ': ' + self.flags[item]['tmp_conquered_by'] + ' in ' + str(time_left))
@@ -261,9 +262,10 @@ class flags:
 	def set_flag_height(self, item, direction = 0):
 		if item in self.flags:
 			tmp_flag = self.flags[item]['entity']
-			cur_time = int(round(time.time(),0))
-			time_left = int(self.flags[item]['timestamp']) - cur_time
+			time_left = int(self.flags[item]['timer']) - float(self.flags[item]['timestamp'])
 			lowest_z = self.flags[item]['Z']
+			if int(self.flags[item]['timer']) < time_left:
+				time_left = int(self.flags[item]['timer'])
 			# if the flag should go down
 			if direction == 0:
 				tmp = self.flag_height / (int(self.flags[item]['timer']))
@@ -318,24 +320,26 @@ class flags:
 			if 't_index' in self.flags[item]:
 				players.extend(self.flags[item]['t_index'])
 			# calculate time left
-			if int(self.flags[item]['timestamp']) == 0 or self.flags[item]['tmp_conquered_by'] != team:
-				self.flags[item]['timestamp'] = cur_time + int(self.flags[item]['timer'])
+			if float(self.flags[item]['timestamp']) == 0 or self.flags[item]['tmp_conquered_by'] != team:
+				self.flags[item]['timestamp'] = self.ontick_time
 				self.flags[item]['tmp_conquered_by'] = team
-				time_left = int(self.flags[item]['timestamp']) - cur_time
+				time_left = int(int(self.flags[item]['timer']) - float(self.flags[item]['timestamp']))
 				if self.flags[item]['tmp_status'] == 'none':
 					time_left += self.flags[item]['timer']
 				HintText(message='{} captured for {} in {}'.format(item,team,time_left)).send(players)
-			elif int(self.flags[item]['timestamp']) > cur_time:
+			elif float(self.flags[item]['timestamp']) < int(self.flags[item]['timer']):
+				self.flags[item]['timestamp'] += self.ontick_time
 				self.set_flag_height(item, tmp_direction)
-				time_left = int(self.flags[item]['timestamp']) - cur_time
+				time_left = int(int(self.flags[item]['timer']) - float(self.flags[item]['timestamp']))
 				if self.flags[item]['tmp_status'] == 'none':
 					time_left += self.flags[item]['timer']
 				HintText(message='{} captured for {} in {}'.format(item,team,time_left)).send(players)
 			# if flag belongs to one of the teams and now is "none"
 			elif self.flags[item]['tmp_status'] == 'none':
-				HintText(message='{} is neutralized!'.format(item,team)).send(players)
+				self.flags[item]['timestamp'] = 0
 				self.respawn_flag(item, 'none')
 			else:
+				self.flags[item]['timestamp'] = 0
 				HintText(message='{} is captured by {}!'.format(item,team)).send(players)
 				for index in self.flags[item][team.lower() + '_index']:
 					player = Player(index)
@@ -343,7 +347,7 @@ class flags:
 				self.respawn_flag(item, team)
 		else:
 			# respawn flag if neccessary
-			if int(self.flags[item]['timestamp']) > 0:
+			if float(self.flags[item]['timestamp']) > 0:
 				self.respawn_flag(item, team)
 			if 'count_' + attacker_team.lower() in self.flags[item]:
 				if int(self.flags[item]['count_' + attacker_team.lower()]) > 0:
@@ -357,10 +361,6 @@ class flags:
 		if 't_index' in self.flags[item]:
 			players.extend(self.flags[item]['t_index'])
 		self.flags[item]['draw'] = 1
-		#FIXME - does not work!
-		# in draw the countdown should not go on.. so we need to "freeze" the time
-		time_rest = int(self.flags[item]['timestamp']) - cur_time
-		self.flags[item]['timestamp'] = time_rest + cur_time
 		HintText(message='{} is in draw!'.format(item)).send(players)
 	
 	def flag_circle(self, vector, radius, r, g, b, a=255):
@@ -449,7 +449,7 @@ class flags:
 			# if there are no player in radius
 			if int(self.flags[item]['count_t']) == 0 and int(self.flags[item]['count_ct']) == 0:
 				# reset flag state
-				if int(self.flags[item]['timestamp']) != 0:
+				if float(self.flags[item]['timestamp']) != 0:
 					self.respawn_flag(item, self.flags[item]['status'])
 				continue
 			# if more T then CT
@@ -494,11 +494,13 @@ class flags:
 
 	def ontick(self):
 		# do not work on every tick
+		self.ontick_time += global_vars.frame_time
 		self.last_ontick += 1
 		if self.last_ontick >= 16:
 			self.last_ontick = 0
 			self.ontick_flags()
 			self.ontick_tickets()
+			self.ontick_time = 0
 
 	def restartround(self):
 		ENDROUND_TEXT = 'endround'
