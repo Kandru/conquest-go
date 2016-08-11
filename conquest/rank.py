@@ -156,8 +156,10 @@ class rank:
 			player = Player.from_userid(userid)
 			if player.team == 3:
 				return 'CT'
-			else:
+			elif player.team == 2:
 				return 'T'
+			else:
+				return None
 		except:
 			msg('ERROR', 'could not get player team')
 	
@@ -169,11 +171,15 @@ class rank:
 			pdata = self.get_player_data(userid)
 			# get player team
 			pteam = self.get_player_team(userid)
+			if pteam is None:
+				return
 			# only in real match, not in warmup...
 			if int(pdata['class']) == 0:
 				self.menu_select_class(userid)
 			# if a user does have a default weapon
-			elif not pteam in pdata['loadout1']:
+			elif pteam not in pdata['loadout1']:
+				print(pteam)
+				print(pdata['loadout1'])
 				self.menu_select_pweapon(userid)
 			# if a user does not have a default weapon for specific class
 			elif not str(pdata['class']) in pdata['loadout1'][pteam]:
@@ -206,11 +212,7 @@ class rank:
 			if not player.address or player.steamid == 'BOT':
 				return
 			pdata = self.get_player_data(userid)
-			# if is round
-			if self.is_round:
-				self.player_spawn_logic(userid)
-			else:
-				self.player_give_weapon(userid)
+			self.player_spawn_logic(userid)
 			# get player team
 			pteam = self.get_player_team(userid)
 			# set player skin
