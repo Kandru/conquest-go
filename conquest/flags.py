@@ -109,6 +109,11 @@ class flags:
 			return {}
 
 	def spawn_flag(self, options = {}):
+		# spawn flag in extra thread (independent from server tick)
+		t = GameThread(target=self._spawn_flag, args=(options, ))
+		t.start()
+
+	def _spawn_flag(self, options = {}):
 		try:
 			# stop if options dict is empty
 			if not options:
