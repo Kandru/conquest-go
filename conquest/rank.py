@@ -2,10 +2,10 @@
 # https://github.com/Kandru/conquest-go
 # author: Karl-Martin Minkner
 # website: https://gameshare.community
-
 import json
 from threading import Lock
 
+from listeners.tick import GameThread
 from players.entity import Player
 from entities.entity import Entity
 from menus import PagedOption
@@ -146,7 +146,8 @@ class rank:
 			
 	def player_connect_full(self, userid):
 		# initialize player data
-		self.get_player_data(userid)
+		t = GameThread(target=self.get_player_data, args=(userid, ))
+		t.start()
 		
 	def begin_new_match(self):
 		self.is_round = True
@@ -205,8 +206,12 @@ class rank:
 					self.player_give_weapon(userid)
 		except:
 			msg('ERROR', 'player spawn logic did not work')
-		
+
 	def player_spawn(self, userid):
+		t = GameThread(target=self._player_spawn, args=(userid, ))
+		t.start()
+
+	def _player_spawn(self, userid):
 		try:
 			player = Player.from_userid(userid)
 			if not player.address or player.steamid == 'BOT':
@@ -223,6 +228,10 @@ class rank:
 			msg('ERROR', 'could not execute player spawn function')
 
 	def player_death(self, userid, attacker):
+		t = GameThread(target=self._player_death, args=(userid, attacker, ))
+		t.start()
+
+	def _player_death(self, userid, attacker):
 		try:
 			player = Player.from_userid(userid)
 			if not player.address or player.steamid == 'BOT':
@@ -238,6 +247,10 @@ class rank:
 			msg('ERROR', 'could not save player rank data')
 
 	def player_say(self, userid, text):
+		t = GameThread(target=self._player_say, args=(userid,text, ))
+		t.start()
+
+	def _player_say(self, userid, text):
 		try:
 			player = Player.from_userid(userid)
 			if not player.address or player.steamid == 'BOT':
