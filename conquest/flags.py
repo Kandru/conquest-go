@@ -2,6 +2,10 @@
 # https://github.com/Kandru/conquest-go
 # author: Karl-Martin Minkner
 # website: https://gameshare.community
+from collections import OrderedDict
+from threading import Lock
+import time
+import math
 
 from config.cvar import ConVar
 from engines.precache import Model
@@ -18,13 +22,8 @@ from filters.players import PlayerIter
 from cvars import cvar
 from menus import SimpleMenu
 from players.entity import Player
-from collections import OrderedDict
 
 from conquest.debug import msg
-
-from threading import Lock
-import time
-import math
 
 class flags:
 	def __init__(self, db, rank, callbacks, sounds):
@@ -37,7 +36,6 @@ class flags:
 		self.flags_lock = Lock()
 		# height of the flag on pole
 		self.flag_height = 120
-		#self.model_flag = Model('models/props_equipment/light_floodlight.mdl')
 		self.model_flag = Model('models/props_downtown/sign_stop.mdl')
 		self.model_pole = Model('models/props/cs_italy/it_streetlampleg.mdl')
 		self.model_beam = Model('sprites/laserbeam.vmt')
