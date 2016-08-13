@@ -21,6 +21,8 @@ from players.entity import Player
 from collections import OrderedDict
 
 from conquest.debug import msg
+
+from threading import Lock
 import time
 import math
 
@@ -32,6 +34,7 @@ class flags:
 		self.color_n = Color(255, 255, 255)
 		self.color_t = Color(255, 0, 0)
 		self.flags = {}
+		self.flags_lock = Lock()
 		# height of the flag on pole
 		self.flag_height = 120
 		#self.model_flag = Model('models/props_equipment/light_floodlight.mdl')
@@ -105,56 +108,66 @@ class flags:
 			msg('ERROR', 'could not fetch specific flag')
 			return {}
 
+	def spawn_flag(self, options = {}):
+		try:
+			# stop if options dict is empty
+			if not options:
+				return False
+			if options['status'] == 'T':
+				color = self.color_t
+			elif options['status'] == 'CT':
+				color = self.color_ct
+			else:
+				color = self.color_n
+			tmp_flag = Entity.create('prop_physics_override')
+			if options['status'] != 'none':
+				tmp_flag.origin = Vector(options['X'], options['Y'], options['Z'] + self.flag_height)
+			else:
+				tmp_flag.origin = Vector(options['X'], options['Y'], options['Z'])
+			tmp_flag.model = self.model_flag
+			tmp_flag.spawn_flags = 265
+			tmp_flag.set_key_value_color('rendercolor', color)
+			tmp_flag.spawn()
+			tmp_pole = Entity.create('prop_physics_override')
+			tmp_pole.origin = Vector(options['X'], options['Y'], options['Z'])
+			tmp_pole.model = self.model_pole
+			tmp_pole.spawn_flags = 265
+			tmp_pole.set_key_value_color('rendercolor', color)
+			tmp_pole.spawn()
+			self.flags_lock.acquire()
+			self.flags[options['name']] = {
+				'name': options['name'],
+				'orderby': options['orderby'],
+				'X': options['X'],
+				'Y': options['Y'],
+				'Z': options['Z'],
+				'spawnX': options['spawn_X'],
+				'spawnY': options['spawn_Y'],
+				'spawnZ': options['spawn_Z'],
+				'distance': options['distance'],
+				'type': options['type'],
+				'timer': options['timer'],
+				'status': options['status'],
+				'tmp_status': options['status'],
+				'tmp_conquered_by': 'none',
+				'draw': 0,
+				'timestamp': '0',
+				't_index' : [],
+				'ct_index': [],
+				'last_glow': 0,
+				'entity': tmp_flag,
+				'entity_pole': tmp_pole,
+			}
+			self.flags_lock.release()
+		except:
+			msg('ERROR', 'could not spawn flag')
+	
 	def spawn_flags(self):
 		flags = self.get_flags()
 		for row in flags:
 			try:
 				if row['name'] not in self.flags:
-					# choose color based on status
-					if row['status'] == 'T':
-						color = self.color_t
-					elif row['status'] == 'CT':
-						color = self.color_ct
-					else:
-						color = self.color_n
-					tmp_flag = Entity.create('prop_physics_override')
-					if row['status'] != 'none':
-						tmp_flag.origin = Vector(row['X'], row['Y'], row['Z'] + self.flag_height)
-					else:
-						tmp_flag.origin = Vector(row['X'], row['Y'], row['Z'])
-					tmp_flag.model = self.model_flag
-					tmp_flag.spawn_flags = 265
-					tmp_flag.set_key_value_color('rendercolor', color)
-					tmp_flag.spawn()
-					tmp_pole = Entity.create('prop_physics_override')
-					tmp_pole.origin = Vector(row['X'], row['Y'], row['Z'])
-					tmp_pole.model = self.model_pole
-					tmp_pole.spawn_flags = 265
-					tmp_pole.set_key_value_color('rendercolor', color)
-					tmp_pole.spawn()
-					self.flags[row['name']] = {
-						'name': row['name'],
-						'orderby': row['orderby'],
-						'X': row['X'],
-						'Y': row['Y'],
-						'Z': row['Z'],
-						'spawnX': row['spawn_X'],
-						'spawnY': row['spawn_Y'],
-						'spawnZ': row['spawn_Z'],
-						'distance': row['distance'],
-						'type': row['type'],
-						'timer': row['timer'],
-						'status': row['status'],
-						'tmp_status': row['status'],
-						'tmp_conquered_by': 'none',
-						'draw': 0,
-						'timestamp': '0',
-						't_index' : [],
-						'ct_index': [],
-						'last_glow': 0,
-						'entity': tmp_flag,
-						'entity_pole': tmp_pole,
-					}
+					self.respawn_flag(row)
 			except:
 				msg('ERROR', 'could not spawn flags')
 
@@ -168,94 +181,22 @@ class flags:
 				# choose color based on status
 				if status == 'T':
 					color = self.color_t
+					flag['status'] = status
 				elif status == 'CT':
 					color = self.color_ct
+					flag['status'] = status
 				else:
 					color = self.color_n
 				if flag is not None:
 					if flag['name'] not in self.flags:
-						tmp_flag = Entity.create('prop_physics_override')
-						if status != 'none':
-							tmp_flag.origin = Vector(flag['X'], flag['Y'], flag['Z'] + self.flag_height)
-						else:
-							tmp_flag.origin = Vector(flag['X'], flag['Y'], flag['Z'])
-						tmp_flag.model = self.model_flag
-						tmp_flag.spawn_flags = 265
-						tmp_flag.set_key_value_color('rendercolor', color)
-						tmp_flag.spawn()
-						tmp_pole = Entity.create('prop_physics_override')
-						tmp_pole.origin = Vector(flag['X'], flag['Y'], flag['Z'])
-						tmp_pole.model = self.model_pole
-						tmp_pole.spawn_flags = 265
-						tmp_pole.set_key_value_color('rendercolor', color)
-						tmp_pole.spawn()
-						self.flags[flag['name']] = {
-							'name': flag['name'],
-							'orderby': flag['orderby'],
-							'X': flag['X'],
-							'Y': flag['Y'],
-							'Z': flag['Z'],
-							'spawnX': flag['spawn_X'],
-							'spawnY': flag['spawn_Y'],
-							'spawnZ': flag['spawn_Z'],
-							'distance': flag['distance'],
-							'type': flag['type'],
-							'timer': flag['timer'],
-							'status': status,
-							'tmp_status': status,
-							'tmp_conquered_by': 'none',
-							'draw': 0,
-							'timestamp': '0',
-							't_index' : [],
-							'ct_index': [],
-							'last_glow': 0,
-							'entity': tmp_flag,
-							'entity_pole': tmp_pole,
-						}
+						self.spawn_flag(flag)
 					else:
 						tmp_flag = self.flags[name]['entity']
 						tmp_flag.remove()
 						tmp_pole = self.flags[name]['entity_pole']
 						tmp_pole.remove()
 						del tmp_flag
-						tmp_flag = Entity.create('prop_physics_override')
-						if status != 'none':
-							tmp_flag.origin = Vector(flag['X'], flag['Y'], flag['Z'] + self.flag_height)
-						else:
-							tmp_flag.origin = Vector(flag['X'], flag['Y'], flag['Z'])
-						tmp_flag.model = self.model_flag
-						tmp_flag.spawn_flags = 265
-						tmp_flag.set_key_value_color('rendercolor', color)
-						tmp_flag.spawn()
-						tmp_pole = Entity.create('prop_physics_override')
-						tmp_pole.origin = Vector(flag['X'], flag['Y'], flag['Z'])
-						tmp_pole.model = self.model_pole
-						tmp_pole.spawn_flags = 265
-						tmp_pole.set_key_value_color('rendercolor', color)
-						tmp_pole.spawn()
-						self.flags[flag['name']] = {
-							'name': flag['name'],
-							'orderby': flag['orderby'],
-							'X': flag['X'],
-							'Y': flag['Y'],
-							'Z': flag['Z'],
-							'spawnX': flag['spawn_X'],
-							'spawnY': flag['spawn_Y'],
-							'spawnZ': flag['spawn_Z'],
-							'distance': flag['distance'],
-							'type': flag['type'],
-							'timer': flag['timer'],
-							'status': status,
-							'tmp_status': status,
-							'tmp_conquered_by': 'none',
-							'draw': 0,
-							'timestamp': '0',
-							't_index' : [],
-							'ct_index': [],
-							'last_glow': 0,
-							'entity': tmp_flag,
-							'entity_pole': tmp_pole,
-						}
+						self.spawn_flag(flag)
 		except:
 			msg('ERROR', 'could not respawn a specific flag')
 
