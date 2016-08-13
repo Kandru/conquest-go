@@ -417,24 +417,16 @@ class flags:
 					tmp_ct += 1
 				elif self.flags[item]['status'] == 'T':
 					tmp_t += 1
-			if tmp_t > tmp_ct and int(self.tickets['ct']) > 0:
+			if tmp_t > tmp_ct:
 				self.tickets['ct'] = int(self.tickets['ct']) - (tmp_t - tmp_ct)
 				if int(self.tickets['ct']) <= 0:
 					self.tickets['ct'] = 0
 					self.endround(8)
-			elif tmp_t < tmp_ct and int(self.tickets['t']) > 0:
+			elif tmp_t < tmp_ct:
 				self.tickets['t'] = int(self.tickets['t']) - (tmp_ct - tmp_t)
 				if int(self.tickets['t']) <= 0:
 					self.tickets['t'] = 0
 					self.endround(7)
-			else:
-				if int(self.tickets['ct']) <= 0 or int(self.tickets['t']) <= 0:
-					if int(self.tickets['ct']) < int(self.tickets['t']):
-						self.tickets['ct'] = 0
-						self.endround(8)
-					elif int(self.tickets['ct']) > int(self.tickets['t']):
-						self.tickets['t'] = 0
-						self.endround(7)
 
 	def ontick(self):
 		# do not work on every tick
