@@ -160,7 +160,7 @@ class rank:
 			elif player.team == 2:
 				return 'T'
 			else:
-				return None
+				return 'none'
 		except:
 			msg('ERROR', 'could not get player team')
 	
@@ -172,15 +172,13 @@ class rank:
 			pdata = self.get_player_data(userid)
 			# get player team
 			pteam = self.get_player_team(userid)
-			if pteam is None:
+			if pteam == 'none':
 				return
 			# only in real match, not in warmup...
 			if int(pdata['class']) == 0:
 				self.menu_select_class(userid)
 			# if a user does have a default weapon
 			elif pteam not in pdata['loadout1']:
-				print(pteam)
-				print(pdata['loadout1'])
 				self.menu_select_pweapon(userid)
 			# if a user does not have a default weapon for specific class
 			elif not str(pdata['class']) in pdata['loadout1'][pteam]:

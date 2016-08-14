@@ -170,7 +170,7 @@ class flags:
 		for row in flags:
 			try:
 				if row['name'] not in self.flags:
-					self.respawn_flag(row)
+					self.respawn_flag(row['name'])
 			except:
 				msg('ERROR', 'could not spawn flags')
 
