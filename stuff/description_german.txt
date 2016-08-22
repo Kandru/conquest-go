@@ -1,0 +1,31 @@
+Conquest:GO
+
+Conquest:GO ist eine Modifikation für das Spiel Counter-Strike:Global Offensive. Es fügt einen neuen Spielmodus hinzu, der vielen bereits aus Spielen wie Battlefield bekannt sein dürfte. Conquest ist ein Spielmodus wo es auf einer Karte mehrere Flaggenpunkte, sogenannte Flags, gibt. Jedes Team startet zu Beginn mit einer Flagge und der gleichen Anzahl an Tickets (z.B. 500) und muss dann versuchen, so viele Flaggen wie möglich zu erobern. Hat ein Team die Mehrheit der Flaggen unter seiner Kontrolle sinkt die Anzahl der Tickets der Gegner. Hat ein Team keine Tickets mehr übrig, gewinnt das andere Team.
+
+Conquest:GO geht allerdings noch einen Schritt weiter und übernimmt auch das Klassensystem aus Battlefield. Der Spieler muss sich zwischen einer von vier verschiedenen Klassen entscheiden und kann diese Klasse dann durch die Eroberung von Flaggen und dem Ausschalten von Gegnern Ränge aufsteigen lassen. Ab und zu gibt es bei einem neuen Rang auch neue Waffen. Die Klasse kann jederzeit gewechselt werden. Hat ein Spieler alle Klassen auf dem höchsten Level (aktuell Level 60) hat man alle Waffen die in CSGO zur Verfügung stehen.
+
+Support:
+Der Support besitzt Waffen wie die MP9, Nva oder XM1014. Außerdem bekommt er zwei Flashbangs um das Team zu unterstützen.
+
+Engineer:
+Der Engineer hat Waffen wie die MP9, MP7, PP-Bizon und natürlich auch die P90. Mit einer Incendiary- und Smokegrenade kann er das Team zusätzlich unterstützen.
+
+Assault:
+der Assault bekommt Waffen wie die Famas, M4A1-S, M4A4 und AUG. Mit einer HE-Grenade und einer Flashbang stürmt er durch die gegnerische Linie um Flaggen zu erobern.
+
+Sniper:
+Die Sniper-Klasse ist gerne alleine im Hintergrund. Mit Waffen wie die SGG08, G3SG1 und AWP kann er Gegner über eine lange Distanz ausschalten um seinem Team zu helfen. Profi-Tip: schnappe dir ein paar Getränke und verstecke dich irgendwo... und falls du einen Sniper siehst: lauf! Oder es wird der letzte Gegner sein den du siehst!
+
+Ausbalanciertes Gameplay
+Um das Gameplay zwischen den beiden Teams möglichst fair zu gestalten gibt es eine zwei sekündige Spawnprotection nach einem Respawn. Wenn du die Klasse oder eine Waffe änderst kannst du nicht angegriffen werden und greifst auch nicht aktiv in das Spielgeschehen mit ein (z.B. ist es nicht möglich Flaggen zu erobern). Um etwas Zufall in das Spielgeschehen zu bringen wird man per Zufall bei einer Flagge wiedereinsteigen die dem eigenen Team gehört.
+
+Um tiefergehend das Gameplay auszubalancieren ist es möglich die Einnahme-Zeit einer Flagge zu verändern. Genauso kann der Einnahme-Bereich geändert werden. Dadurch ist es möglich viele unterschiedliche Arten von Flaggen zu erstellen. Jede Flagge hat dabei die bestmögliche Position und Größe auf der Karte. Fehler passieren allerdings auch uns. Gerne kannst du uns auf Github kontaktieren falls dir Probleme auffallen.
+
+Helfe uns die Modifikation zu verbessern
+Es gibt viel zu tun, komm hau'n wir ab! Wenn du programmieren kannst, Werbung schalten willst, Testen möchtest oder du dich in irgend einer anderen Art und Weise am Geschehen rund um Conquest:GO beteiligen willst darfst du mich gerne über admin [at] gameshare [dot] co kontaktieren oder mich direkt über das entsprechende Github-Repository anschreiben.
+
+Ich freue mich auf jede Hilfe die ich bekommen kann!
+
+Weiterführende Links:
+https://github.com/Kandru/conquest-go
+https://gameshare.community/portfolio/conquestgo/
