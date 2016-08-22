@@ -206,10 +206,6 @@ class rank:
 			msg('ERROR', 'player spawn logic did not work')
 
 	def player_spawn(self, userid):
-		t = GameThread(target=self._player_spawn, args=(userid, ))
-		t.start()
-
-	def _player_spawn(self, userid):
 		try:
 			player = Player.from_userid(userid)
 			if not player.address or player.steamid == 'BOT':
