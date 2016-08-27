@@ -1,0 +1,30 @@
+Conquest:GO
+
+Conquest:GO is an modification for the game Counter-Strike:Global Offensive. It adds a new gamemode you should already know from games like Battlefield. Conquest is a gamemode where you got multiple flags on a map. Every team starts with one flag and the same amount of tickets (e.G. 500) and have to work together to control as much flags as possible. If a team got more flags then the other one the amount of tickets from the enemy team will decrease. If one team has no more tickets it will loose the round.
+
+Conquest:GO also takes the class system from Battlefield. As player you have to choose between four different classes. You can raise your rank by conquer flags and killing enemies. Sometimes you'll get new weapons on a new rank. You can also change the class everytime. If you played with all four classes to level 60 you'll get all weapons that CSGO has.
+
+Support:
+The support class do have weapons like MP9, Nva, XM1014 and so on. He also will get two flashbangs to support his team.
+
+Engineer:
+The Engineer class do have weapons like MP9, MP7, PP-Bizon, and P90 of course. With an incendiary and smoke grenade he can support his team as well.
+
+Assault:
+The Assault class do have weapons like Famas, M4A1-S, M4A4 and AUG. With an HE grenade and an flashbang he can push through the enemy lines to conquer flags.
+
+Sniper:
+The Sniper class likes to be alone in the background. With weapons like SGG08, G3SG1 and AWP he can simply kill enemies from a far distance and backup his team. Pro-Tip: grep some drinks and hide somewhere… and if you see an sniper: run! or it will be the last enemie you’ll see.
+
+Balanced Gameplay
+To make the gameplay between the two teams as balanced as possible you'll have a spawn protection for about two seconds. If you change your class or weapon you can't actually play or get killed. To have some randomness in the gameplay you'll spawn randomly at a flag that belongs to your team.
+
+To make the gameplay even better we can change the conquer time for a flag. Even the conquer distance can be changed. Every flag has the best position and size on every map. But mistakes can happen so please contact us if we made something wrong. Please do this on github if possible.
+
+Help us to actually improve our modification
+We have much work to do! If you can develop (in python3) or wan't to do some advertisement or just test the gamemode for us we would definately need your help to make Conquest:GO even better. Feel free to contact us via mail admin [at] gameshare [dot] co or write an issue on github (or even make a pull request).
+
+Would be glad to get as many help as possible!
+
+https://github.com/Kandru/conquest-go
+https://gameshare.community/portfolio/conquestgo/
