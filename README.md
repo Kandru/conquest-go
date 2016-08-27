@@ -18,50 +18,14 @@ Here are some of the main features of the gamemode:
 
 ## installation
 - install latest release of sourcepython (http://forums.sourcepython.com/)
-- copy the "materials" and "models" folder to your csgo server directory into the existing folders (overwrite if neccessary)
+- copy the "materials", "models" and "cfg" folder to your csgo server directory into the existing folders (overwrite if neccessary)
 - upload same files on your gameservers fastdownload (if any) and maybe it's a good idea to compress them to save bandwidth and disk space
 - copy the "conquest" folder into the plugin directory of sourcepython and change connection details in "mysql.py"
 - import the schema "database.sql" to your database server
-- create a server.cfg file in the "cfg" directory of your csgo server and add the config entries below to it
-- start the server (see command below)
+- modify the "csgo-server.cfg" ;)
+- copy the "motd" folder somewhere on a webspace and just link it to your motd.txt
+- start the server
 - add bots for testing or just start playing with your friends
-
-### server config file
-you should set some csgo server variables at least and make sure they don't get overwritten since we definately need them ;)
-```
-mp_ignore_round_win_conditions 1
-mp_freezetime "0"
-mp_afterroundmoney "0"
-mp_timelimit "0"
-mp_buytime "0"
-mp_win_panel_display_time "7"
-mp_free_armor "0"
-sv_tags "conquest:go"
-cash_player_bomb_defused "0"
-cash_player_bomb_planted "0"
-cash_player_damage_hostage "-30"
-cash_player_interact_with_hostage "0"
-cash_player_killed_enemy_default "0"
-cash_player_killed_enemy_factor "0"
-cash_player_killed_hostage "-1000"
-cash_player_killed_teammate "-300"
-cash_player_rescued_hostage "0"
-cash_team_elimination_bomb_map "0"
-cash_team_elimination_hostage_map_t "0"
-cash_team_elimination_hostage_map_ct "0"
-cash_team_hostage_alive "0"
-cash_team_hostage_interaction "0"
-cash_team_loser_bonus "0"
-cash_team_loser_bonus_consecutive_rounds "0"
-cash_team_planted_bomb_but_defused "0"
-cash_team_rescued_hostage "0"
-cash_team_terrorist_win_bomb "0"
-cash_team_win_by_defusing_bomb "0"
-cash_team_win_by_hostage_rescue "0"
-cash_team_win_by_time_running_out_hostage "0"
-cash_team_win_by_time_running_out_bomb "0"
-mp_playercashawards "0"
-```
 
 ## start gameserver
 it's useful to use classic casual as gamemode because otherwise you couldn't join a running game. start the server with the following command:
