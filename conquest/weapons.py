@@ -243,8 +243,8 @@ class weapons:
 			start_frame=0
 		)
 
-	def get_max_ammo_of_weapon(self, weapon_index):
-		tmp_weap = Weapon(weapon_index)
+	def get_max_ammo_of_weapon(self, weapon):
+		tmp_weap = weapon
 		if tmp_weap:
 			ammo = 10
 			for item in self.rank.weapons:
@@ -305,11 +305,11 @@ class weapons:
 							self.pack[item]['amount'] -= give
 						# ammo box
 						if self.pack[item]['type'] == 'ammo':
-							if player.get_primary():
-								weapon = Weapon(player.get_primary())
+							if player.primary:
+								weapon = player.primary
 								if weapon:
 									current = int(weapon.get_property_short('m_iPrimaryReserveAmmoCount'))
-									maxammo = self.get_max_ammo_of_weapon(player.get_primary())
+									maxammo = self.get_max_ammo_of_weapon(player.primary)
 									if current < maxammo:
 										if not int(current) + int(give) < maxammo:
 											give = int(maxammo) - int(current)
@@ -317,10 +317,10 @@ class weapons:
 											self.rank.player_add_cash(self.pack[item]['userid'], give)
 										weapon.set_property_short('m_iPrimaryReserveAmmoCount', int(current) + int(give))
 										self.pack[item]['amount'] -= give
-								weapon = Weapon(player.get_secondary())
+								weapon = player.secondary
 								if weapon:
 									current = int(weapon.get_property_short('m_iPrimaryReserveAmmoCount'))
-									maxammo = self.get_max_ammo_of_weapon(player.get_secondary())
+									maxammo = self.get_max_ammo_of_weapon(player.secondary)
 									if current < maxammo:
 										if not int(current) + int(give) < maxammo:
 											give = int(maxammo) - int(current)

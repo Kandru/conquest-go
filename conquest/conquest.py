@@ -4,7 +4,7 @@
 # website: https://gameshare.community
 
 from events import Event
-from listeners import OnTick
+from listeners import OnTick, OnPluginLoaded, OnPluginUnloaded
 from players.entity import Player
 from filters.entities import EntityIter
 from entities.entity import Entity
@@ -32,8 +32,8 @@ class_sounds = None
 
 _bump_player = None
 
-@Event('load')
-def load():
+@OnPluginLoaded
+def pload(var):
 	global class_mysql, class_flags, class_respawn, class_rank, class_weapons, class_sounds
 	class_mysql = mysql()
 	class_downloads = downloads(class_mysql)
@@ -44,8 +44,8 @@ def load():
 	class_respawn = respawn(class_callbacks)
 	class_weapons = weapons(class_mysql, class_downloads, class_rank)
 
-@Event('unload')
-def unload():
+@OnPluginUnloaded
+def punload(var):
 	class_flags.reset_flags()
 
 @OnTick

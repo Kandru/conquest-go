@@ -4,6 +4,7 @@
 # website: https://gameshare.community
 import json
 from threading import Lock
+from queue import Queue
 
 from listeners.tick import GameThread
 from players.entity import Player
@@ -37,6 +38,16 @@ class rank:
 		self.get_skins()
 		self.player_data_lock = Lock()
 		self.is_round = False
+		self.queue = Queue()
+		t = GameThread(target=self.queueworker, args=())
+		t.start()
+
+	def queueworker(self):
+		while True:
+			item = self.queue.get()
+			if item is None:
+				break
+			getattr(self, item['function'])(item['data'])
 
 	def get_ranks(self):
 		sql = "SELECT * FROM ranks ORDER BY id ASC"
@@ -114,7 +125,7 @@ class rank:
 			for item in self.classes:
 				tmp_rank[item] = 1
 			sql = "INSERT INTO `players` (`steamid`, `username`, `rank`, `cash`)VALUES(%s,%s,%s,%s)"
-			self.db.query(sql, (player.steamid,player.name,json.dumps(tmp_rank),0,))
+			self.db.query(sql, (player.steamid,player.name,json.dumps(tmp_rank),0,), wait=False)
 		except:
 			msg('ERROR', 'could not insert player data')
 
@@ -138,7 +149,7 @@ class rank:
 			lock = False
 			tmp_values.append(player.steamid)
 			sql = "UPDATE `players` SET " + tmp_keys[1:] + " WHERE steamid = %s"
-			self.db.query(sql, tmp_values)
+			self.db.query(sql, tmp_values, wait=False)
 		except:
 			if lock:
 				self.player_data_lock.release()
@@ -318,15 +329,24 @@ class rank:
 			self.player_data_lock.release()
 
 	def player_add_cash(self, userid, amount):
+		self.queue.put({
+			'function': '_player_add_cash',
+			'data': (userid, amount)
+		})
+
+	def _player_add_cash(self, data = ()):
 		try:
-			player = Player.from_userid(userid)
-			if not player.address or player.steamid == 'BOT':
-				return
-			player.cash = player.cash + amount
-			self.update_player_data(userid, {
-				'cash': player.cash
-			})
-			self.player_check_rank(userid)
+			if len(data) == 2:
+				userid = data[0]
+				amount = data[1]
+				player = Player.from_userid(userid)
+				if not player.address or player.steamid == 'BOT':
+					return
+				player.cash = player.cash + amount
+				self.update_player_data(userid, {
+					'cash': player.cash
+				})
+				self.player_check_rank(userid)
 		except:
 			msg('ERROR', 'could not add {} cash to userid {}'.format(amount, userid))
 

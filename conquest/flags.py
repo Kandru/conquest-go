@@ -106,12 +106,12 @@ class flags:
 			msg('ERROR', 'could not fetch specific flag')
 			return {}
 
-	def spawn_flag(self, options = {}):
+	def spawn_flag(self, options = {}, spawnflag = True):
 		# spawn flag in extra thread (independent from server tick)
-		t = GameThread(target=self._spawn_flag, args=(options, ))
+		t = GameThread(target=self._spawn_flag, args=(options,spawnflag, ))
 		t.start()
 
-	def _spawn_flag(self, options = {}):
+	def _spawn_flag(self, options = {}, spawnflag = True):
 		try:
 			# stop if options dict is empty
 			if not options:
@@ -122,21 +122,33 @@ class flags:
 				color = self.color_ct
 			else:
 				color = self.color_n
-			tmp_flag = Entity.create('prop_physics_override')
+			if spawnflag is False:
+				tmp_flag = self.flags[options['name']]['entity']
+				tmp_pole = self.flags[options['name']]['entity_pole']
+			else:
+				tmp_flag = Entity.create('prop_physics_override')
+				tmp_pole = Entity.create('prop_physics_override')
+				if options['name'] in self.flags:
+					if self.flags[options['name']]['entity'] is not None:
+						tmp = self.flags[options['name']]['entity']
+						tmp.remove()
+					if self.flags[options['name']]['entity_pole'] is not None:
+						tmp = self.flags[options['name']]['entity_pole']
+						tmp.remove()
 			if options['status'] != 'none':
 				tmp_flag.origin = Vector(options['X'], options['Y'], options['Z'] + self.flag_height)
 			else:
 				tmp_flag.origin = Vector(options['X'], options['Y'], options['Z'])
-			tmp_flag.model = self.model_flag
-			tmp_flag.spawn_flags = 265
 			tmp_flag.set_key_value_color('rendercolor', color)
-			tmp_flag.spawn()
-			tmp_pole = Entity.create('prop_physics_override')
-			tmp_pole.origin = Vector(options['X'], options['Y'], options['Z'])
-			tmp_pole.model = self.model_pole
-			tmp_pole.spawn_flags = 265
 			tmp_pole.set_key_value_color('rendercolor', color)
-			tmp_pole.spawn()
+			if spawnflag is True:
+				tmp_flag.model = self.model_flag
+				tmp_flag.spawn_flags = 265
+				tmp_pole.origin = Vector(options['X'], options['Y'], options['Z'])
+				tmp_pole.model = self.model_pole
+				tmp_pole.spawn_flags = 265
+				tmp_flag.spawn()
+				tmp_pole.spawn()
 			self.flags_lock.acquire()
 			self.flags[options['name']] = {
 				'name': options['name'],
@@ -194,12 +206,8 @@ class flags:
 					if flag['name'] not in self.flags:
 						self.spawn_flag(flag)
 					else:
-						tmp_flag = self.flags[name]['entity']
-						tmp_flag.remove()
-						tmp_pole = self.flags[name]['entity_pole']
-						tmp_pole.remove()
-						del tmp_flag
-						self.spawn_flag(flag)
+						pass
+						self.spawn_flag(flag, False)
 		except:
 			msg('ERROR', 'could not respawn a specific flag')
 
@@ -239,6 +247,7 @@ class flags:
 				del self.flags[item]
 			except:
 				msg('ERROR', 'could not destroy flag {}').format(item)
+
 	def draw_flag(self, item):
 		players = []
 		if 'ct_index' in self.flags[item]:
@@ -283,7 +292,6 @@ class flags:
 				self.flags[item]['timestamp'] = 0
 				self.respawn_flag(item, 'none')
 			else:
-				self.flags[item]['timestamp'] = 0
 				HintText(message='{} is captured by {}!'.format(item,team)).send(players)
 				for index in self.flags[item][team.lower() + '_index']:
 					player = Player(index)
@@ -348,10 +356,10 @@ class flags:
 		cur_time = int(round(time.time(),0))
 		# reset counter for teams at flags
 		for item in self.flags:
-				self.flags[item]['count_t'] = 0
-				self.flags[item]['count_ct'] = 0
-				self.flags[item]['ct_index'] = []
-				self.flags[item]['t_index'] = []
+			self.flags[item]['count_t'] = 0
+			self.flags[item]['count_ct'] = 0
+			self.flags[item]['ct_index'] = []
+			self.flags[item]['t_index'] = []
 		# count every player in near of the flags
 		for player in PlayerIter():
 			if player.dead:
