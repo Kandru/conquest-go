@@ -42,7 +42,7 @@ class respawn:
 				return
 			player.player_state = 0
 			player.life_state = LifeState.ALIVE
-			player.respawn()
+			player.spawn()
 		except:
 			msg('ERROR', 'could not respawn player')
 

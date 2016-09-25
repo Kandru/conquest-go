@@ -278,6 +278,7 @@ class rank:
 				self.update_player_data(userid, {
 					'change_class': 1
 				})
+				SayText2('You can change your class on next respawn!').send(player.index)
 			# change skin
 			change_skin = ['!skin','!selectskin','!changeskin','!s']
 			if text in change_skin:
